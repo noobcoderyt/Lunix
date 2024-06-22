@@ -76,7 +76,7 @@ async def flip(ctx):
     time.sleep(0.5)
     await ctx.send("...")
     time.sleep(0.5)
-    await(f"{random.choice(coin)}!!!")
+    await ctx.send(f"{random.choice(coin)}!!!")
 
 @bot.command()
 async def roll(ctx):
@@ -90,7 +90,7 @@ async def roll(ctx):
     time.sleep(0.5)
     await ctx.send("...")
     time.sleep(0.5)
-    await(f"{random.randint(1,6)}!!!")
+    await ctx.send(f"{random.randint(1,6)}!!!")
 
 @bot.command()
 async def wish(ctx, arg):
