@@ -27,20 +27,20 @@ async def info(ctx):
         Whats up! I am Lunix, the offical bot of The Linux Hideout.
         My prefix is '.'""")
     embed.add_field(name="Commands", value="""
-        .info
-        .rules
-        .roll
-        .roles
-        .channel
-        .wish user
-        .kamehameha
-        .8ball statement
-        .prowler
-        .calculate equation
-        .meme
-        .comic
-        .joke
-        .fact
+        .info - Displays information about this bot.
+        .rules - Displays *some* rules.
+        .roll - Rolls a dice.
+        .roles - Displays the roles a member can get.
+        .channel - Sends a link to NoobCoder's YouTube channel.
+        .wish [user] - Sends a Happy Birthday wish to a user of your choice.
+        .kamehameha - Sends a Kamehameha GIF.
+        .8ball [statement] - Predicts a statement.
+        .prowler - Sends a Prowler meme.
+        .calculate [equation] - Solves an equation.
+        .meme - Sends a meme.
+        .comic - Sends a comic.
+        .joke - Sends a joke
+        .fact - Sends a fact.
                     """, inline=False)
     embed.add_field(name="", value="I will also reply to your messages occasionally!")
 
@@ -101,7 +101,7 @@ async def wish(ctx, arg):
     if "@everyone" in arg or "@here" in arg:
         pass
     elif arg == "":
-        await ctx.send("You can't wish no one")
+        await ctx.send("Please specify a user.")
     else:
         await ctx.send(f"Happy Birthday {arg}! 🎂🎂🎂")
 
@@ -112,7 +112,7 @@ async def kamehameha(ctx):
 @bot.command()
 async def calculate(ctx, arg):
     if arg == "":
-        await ctx.send("I can't calculate nothing")
+        await ctx.send("Please include an equation.")
     else:
         try:
             await ctx.send(eval(arg))
