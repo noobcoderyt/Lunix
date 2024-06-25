@@ -7,7 +7,7 @@ import json
 import requests
 import google.generativeai as genai
 
-ai_api = "key
+ai_api = "key"
 discord_api = "key"
 fact_api = "key"
 
