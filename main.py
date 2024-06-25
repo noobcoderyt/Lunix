@@ -5,6 +5,15 @@ import random
 import aiohttp
 import json
 import requests
+import google.generativeai as genai
+
+ai_api = "key
+discord_api = "key"
+fact_api = "key"
+
+
+genai.configure(api_key=ai_api)
+model = genai.GenerativeModel("gemini-1.5-flash", system_instruction="You are a discord bot called Lunix from a discord server named TheLinuxHideout. You talk like people do on whatsapp or discord. You use abbrevations for words like idk, lol, lmao. You also like to roast people")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -151,24 +160,36 @@ async def comic(ctx):
 
 @bot.command()
 async def joke(ctx):
-    response = requests.get("https://v2.jokeapi.dev/joke/Any")
+    response = requests.get("https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,racist,sexist,explicit")
     data = response.json()
     await ctx.send(f"{data['setup']} - {data['delivery']}")
 
 @bot.command()
 async def fact(ctx):
-    response = requests.get("https://api.api-ninjas.com/v1/facts", headers={'X-Api-Key': 'KEY'})
+    response = requests.get("https://api.api-ninjas.com/v1/facts", headers={'X-Api-Key': fact_api})
     fact_data = json.loads(response.text)
     fact_text = fact_data[0]['fact']
     await ctx.send(fact_text)
 
+@bot.command()
+async def talk(ctx, *args):
+    arguments = " ".join(args)
+    response = model.generate_content(arguments)
+    await ctx.reply(response.text)
+    
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
         return
+
+    if message.channel.id == 1253742174584180849:
+        chat = model.start_chat(history=[])
+        response = chat.send_message(message.content)
+        await message.reply(response.text)
+
     
-    if "kys" in message.content.lower() or message.content.startswith("NI"):
-        await message.reply("stfu _ who r u")
+    if "kys" in message.content.lower() or message.content == "NI":
+        await message.reply("stfu nigga who r u")
 
     if "socket" in message.content.lower():
         await message.reply("Socket more like Cocket lmfao")
@@ -209,6 +230,15 @@ async def on_message(message):
     if "discox" in message.content.lower():
         await message.reply(f"Congratulations {message.author}! You are now *an* Member!")
 
+    if message.content.endswith("*"):
+        if message.content.startswith("*"):
+            return
+        else:
+            await message.reply("<:Nerd:1156881557680820284>")
+    
+    if message.content == "LLL" or message.content == "LL" or message.content == "L":
+        await message.reply("🫵")
+
     await bot.process_commands(message)
 
-bot.run("TOKEN")
+bot.run(discord_api)
