@@ -6,6 +6,7 @@ import aiohttp
 import json
 import requests
 import google.generativeai as genai
+from datetime import timedelta
 
 ai_api = "key"
 discord_api = "key"
@@ -13,10 +14,11 @@ fact_api = "key"
 
 
 genai.configure(api_key=ai_api)
-model = genai.GenerativeModel("gemini-1.5-flash", system_instruction="You are a discord bot called Lunix from a discord server named TheLinuxHideout. You talk like people do on whatsapp or discord. You use abbrevations for words like idk, lol, lmao. You also like to roast people")
+model = genai.GenerativeModel("gemini-1.5-flash", system_instruction="You are a discord bot called Lunix from a discord server named TheLinuxHideout. You talk like people do on whatsapp or discord. You use abbrevations for words like idk, lol, lmao. You also like to roast people.")
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
 
 bot = commands.Bot(command_prefix=".", intents=intents, help_command=None)
 
@@ -75,11 +77,6 @@ async def rules(ctx):
     await ctx.send(file=discord.File("media/rules.jpg"))
 
 @bot.command()
-async def github(ctx):
-    await ctx.send("https://github.com/noobcoderyt/Lunix")
-    
-
-@bot.command()
 async def channel(ctx):
     await ctx.send("https://youtube.com/@noobcoderyt")
 
@@ -114,7 +111,7 @@ async def roll(ctx):
 @bot.command()
 async def wish(ctx, arg):
     if "@everyone" in arg or "@here" in arg:
-        pass
+        await ctx.send("Nigga is trying to ping everyone ☠️")
     elif arg == "":
         await ctx.send("You can't wish no one")
     else:
@@ -178,10 +175,8 @@ async def fact(ctx):
     await ctx.send(fact_text)
 
 @bot.command()
-async def talk(ctx, *args):
-    arguments = " ".join(args)
-    response = model.generate_content(arguments)
-    await ctx.reply(response.text)
+async def github(ctx):
+    await ctx.send("https://github.com/noobcoderyt/Lunix")
     
 @bot.event
 async def on_message(message):
@@ -191,7 +186,12 @@ async def on_message(message):
     if message.channel.id == 1253742174584180849:
         chat = model.start_chat(history=[])
         response = chat.send_message(message.content)
-        await message.reply(response.text)
+        if "@" in response.text or "?ban" in response.text or "?kick" in response.text or "?mute" in response.text or "?obliterate" in response.text or "?eliminate" in response.text:
+            duration = timedelta(minutes=60)
+            await message.author.timeout(duration, reason="trying to be too smart")
+            await message.channel.send(f'{message.author.mention} has been timed out for trying to be too smart')
+        else:
+            await message.reply(response.text)
 
     
     if "kys" in message.content.lower() or message.content == "NI":
