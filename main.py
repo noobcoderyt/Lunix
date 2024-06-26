@@ -50,6 +50,7 @@ async def info(ctx):
         .comic
         .joke
         .fact
+        .github
                     """, inline=False)
     embed.add_field(name="", value="I will also reply to your messages occasionally!")
 
@@ -72,6 +73,11 @@ async def roles(ctx):
 @bot.command()
 async def rules(ctx):
     await ctx.send(file=discord.File("media/rules.jpg"))
+
+@bot.command()
+async def github(ctx):
+    await ctx.send("https://github.com/noobcoderyt/Lunix")
+    
 
 @bot.command()
 async def channel(ctx):
