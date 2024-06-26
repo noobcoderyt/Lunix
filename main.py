@@ -37,23 +37,12 @@ async def info(ctx):
     embed = discord.Embed(title="Lunix",color=discord.Color.blue(), description="""
         Whats up! I am Lunix, the offical bot of The Linux Hideout.
         My prefix is '.'""")
-    embed.add_field(name="Commands", value="""
-        .info
-        .rules
-        .roll
-        .roles
-        .channel
-        .wish user
-        .kamehameha
-        .8ball statement
-        .prowler
-        .calculate equation
-        .meme
-        .comic
-        .joke
-        .fact
-        .github
-                    """, inline=False)
+    
+    embed.set_author(name=**ctx.author.display_name**, icon_url=**ctx.author.avatar_url**)
+    
+    embed.add_field(name="Youtube", value="[link](https://youtube.com/@noobcoderyt)", inline=True)
+    embed.add_field(name="Github", value="[link](https://github.com/noobcoderyt/Lunix)", inline=True)
+
     embed.add_field(name="", value="I will also reply to your messages occasionally!")
 
     embed.set_footer(text="Note: Currently Under Development")
@@ -75,10 +64,6 @@ async def roles(ctx):
 @bot.command()
 async def rules(ctx):
     await ctx.send(file=discord.File("media/rules.jpg"))
-
-@bot.command()
-async def channel(ctx):
-    await ctx.send("https://youtube.com/@noobcoderyt")
 
 @bot.command()
 async def flip(ctx):
@@ -174,9 +159,41 @@ async def fact(ctx):
     fact_text = fact_data[0]['fact']
     await ctx.send(fact_text)
 
+
 @bot.command()
-async def github(ctx):
-    await ctx.send("https://github.com/noobcoderyt/Lunix")
+async def help(ctx):
+    embed = discord.Embed(title="Commands",color=discord.Color.blue(), description="""
+        The prefix is '." """)
+    embed.set_author(name=**ctx.author.display_name**, icon_url=**ctx.author.avatar_url**)
+
+    embed.add_field(name="Info", value="""
+                    - `.help` - This command.
+                    - `.fact` - Sends a fact.    
+                    - `.calculate <equation>` - Solves an equation.
+                    - `.info` - Displays information about this bot.
+                    - `.rules` - Displays *some* rules.
+                    - `.roles` - Displays the roles a member can get.
+
+                    """, inline=False)
+
+    embed.add_field(name="Fun", value="""
+                    - `.kamehameha` - Sends a Kamehameha GIF.
+                    - `.8ball <statement>` - Predicts a statement.
+                    - `.prowler` - Sends a Prowler meme.
+                    - `.meme` - Sends a meme.
+                    - `.comic` - Sends a comic.
+                    - `.joke` - Sends a joke
+                    - `.wish <user>` - Sends a Happy Birthday wish to a user of your choice.
+                    - `.roll` - Rolls a dice.
+                      
+                    
+                       """, inline=False)
+
+    
+    
+    embed.set_footer(text="Note: Currently Under Development")
+
+    await ctx.send(embed=embed)
     
 @bot.event
 async def on_message(message):
