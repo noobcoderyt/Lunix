@@ -653,7 +653,7 @@ async def on_message(message):
         await message.reply("thats what she said")
 
     if "gato" in message.content.lower():
-        for i in range(random.randint(1,9)):
+        for i in range(random.randint(1,30)):
             await message.channel.send("GATO IS BACK")
             time.sleep(0.5)
         await message.channel.send("<:tr:1248294470588563497>")
