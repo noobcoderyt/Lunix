@@ -7,6 +7,7 @@ import json
 import requests
 import google.generativeai as genai
 from datetime import timedelta
+import asyncio
 
 ai_api = "key"
 discord_api = "key"
@@ -25,6 +26,12 @@ bot = commands.Bot(command_prefix=".", intents=intents, help_command=None)
 coin = ["HEAD", "TAILS"]
 _8ball_ = ["very", "NAWWWWW"]
 kamehamehagifs = ["https://c.tenor.com/yOej10JYX4sAAAAM/kamehameha-ui-goku.gif","https://66.media.tumblr.com/40e19795a78fbb4dc5212b0416870bad/tumblr_p262c08aKm1wyh2j4o1_500.gif","https://media1.tenor.com/images/8f7b25ee13cfd669418c78cd50431de3/tenor.gif?itemid=11539971","https://4.bp.blogspot.com/-E_BQvOD2TsM/WNKLRZPg3MI/AAAAAAAAZZ8/hdfcuVeBjp88nJQmON6tJyTDvXZhuQtBwCLcB/s1600/Gifs+animados+Kamehameha+11.gif", "https://media.tenor.com/images/be06b296f1144d9d37dadbd22f46cf54/tenor.gif"]
+
+async def unban_after_delay(guild, user_id, delay):
+    await asyncio.sleep(delay)
+    user = await bot.fetch_user(user_id)
+    await guild.unban(user)
+
 
 
 @bot.event
@@ -252,6 +259,74 @@ async def kick(ctx, member: discord.Member = None, *, reason: str = None):
                         inline=False)
 
         await ctx.send(embed=embed)
+
+
+@bot.command()
+@commands.has_permissions(kick_members = True)
+async def ban(ctx, member: discord.Member = None, duration: int=0, *, reason: str = None):
+
+    if member is None:
+        embed = discord.Embed(title="Ban",
+                              description="The ban command can be used to ban a user",
+                              colour=0x00b0f4)
+
+        embed.add_field(name="Usage",
+                        value="`.ban <member> <duration> [reason]`\n*<member>* - The member you want to ban\n*[duration]* - Duration of the ban (optional)\n*[reason]* - The reason for the ban (optional)",
+                        inline=False)
+        embed.add_field(name="Example",
+                        value="`.ban noobcoderyt 60 Loser`\n\n*Noobcoder* will be banned for 1 minute with the reason *Loser*",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+        return
+
+    if member.top_role >= ctx.author.top_role:
+        embed = discord.Embed(title="Error!",
+                              description="You can't ban this user.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+        return
+
+    if reason is None:
+        reason = "No reason specified."
+    try:
+        await member.ban(reason=reason)
+        embed = discord.Embed(title="Banned!",
+                              description=f"{member.mention} has been banned!",
+                              colour=0x00c105)
+
+        embed.add_field(name="Reason",
+                        value=f"`{reason}`",
+                        inline=True)
+
+        embed.add_field(name="Duration",
+                        value=f"`{duration}`",
+                        inline=True)
+
+        await ctx.send(embed=embed)
+
+        if duration > 0:
+            await unban_after_delay(ctx.guild, member.id, duration)
+
+    except discord.Forbidden:
+        embed = discord.Embed(title="Error!",
+                              description="A permission related error has occured.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+
+    except discord.HTTPException as e:
+        embed = discord.Embed(title="Error!",
+                              description="An unknown error has occured",
+                              colour=0xff0000)
+
+        embed.add_field(name="Error code",
+                        value=f"`{e}`",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+
 
 
     
