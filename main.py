@@ -196,22 +196,62 @@ async def help(ctx):
 
 @bot.command()
 @commands.has_permissions(kick_members = True)
-async def kick(ctx, member: discord.Member = None):
+async def kick(ctx, member: discord.Member = None, *, reason: str = None):
+
     if member is None:
-        await ctx.send("you need to provide a member to kick")
+        embed = discord.Embed(title="Kick",
+                              description="The kick command can be used to kick a user",
+                              colour=0x00b0f4)
+
+        embed.add_field(name="Usage",
+                        value="`.kick <member> [reason]`\n*<member>* - The member you want to kick\n*[reason]* - The reason for the kick (optional)",
+                        inline=False)
+        embed.add_field(name="Example",
+                        value="`.kick noobcoderyt Loser`\n\n*Noobcoder* will be kicked with the reason *Loser*",
+                        inline=False)
+
+        await ctx.send(embed=embed)
         return
 
     if member.top_role >= ctx.author.top_role:
-        await ctx.send("you don't have enough permissions to use this command.")
+        embed = discord.Embed(title="Error!",
+                              description="You can't kick this user.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
         return
+
+    if reason is None:
+        reason = "No reason specified."
     try:
-        await member.kick()
-        await ctx.send(f"{member.mention} has been kicked")
+        await member.kick(reason=reason)
+        embed = discord.Embed(title="Kicked!",
+                              description=f"{member.mention} has been kicked!",
+                              colour=0x00c105)
+
+        embed.add_field(name="Reason",
+                        value=f"`{reason}`",
+                        inline=False)
+
+        await ctx.send(embed=embed)
 
     except discord.Forbidden:
-        await ctx.send("I don't have enough permissions to kick this member")
+        embed = discord.Embed(title="Error!",
+                              description="A permission related error has occured.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+        
     except discord.HTTPException as e:
-        await ctx.send(f"an error has occured: {e}")
+        embed = discord.Embed(title="Error!",
+                              description="An unknown error has occured",
+                              colour=0xff0000)
+
+        embed.add_field(name="Error code",
+                        value=f"`{e}`",
+                        inline=False)
+
+        await ctx.send(embed=embed)
 
 
     
