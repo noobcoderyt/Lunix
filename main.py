@@ -52,7 +52,6 @@ def parse_duration(duration_str):
     amount, unit = match.groups()
     return int(amount) * unit_multipliers[unit]
 
-
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
@@ -672,6 +671,8 @@ async def unmute(ctx, member: discord.Member = None, *, reason: str = None):
         await ctx.send(embed=embed)
 
 
+
+
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
@@ -703,7 +704,7 @@ async def on_message(message):
         await message.reply("thats what she said")
 
     if "gato" in message.content.lower():
-        for i in range(random.randint(1,9)):
+        for i in range(random.randint(1,30)):
             await message.channel.send("GATO IS BACK")
             time.sleep(0.5)
         await message.channel.send("<:tr:1248294470588563497>")
