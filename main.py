@@ -431,7 +431,7 @@ async def softban(ctx, member: discord.Member = None, *, reason: str = None):
                         value="`.softban <member> [reason]`\n*<member>* - The member you want to softban\n*[reason]* - The reason for the softban (optional)",
                         inline=False)
         embed.add_field(name="Example",
-                        value="`.softbam noobcoderyt Loser`\n\n*Noobcoder* will be softban with the reason *Loser*",
+                        value="`.softban noobcoderyt Loser`\n\n*Noobcoder* will be softban with the reason *Loser*",
                         inline=False)
 
         await ctx.send(embed=embed)
@@ -477,6 +477,83 @@ async def softban(ctx, member: discord.Member = None, *, reason: str = None):
                         inline=False)
 
         await ctx.send(embed=embed)
+
+
+@bot.command()
+@commands.has_permissions(moderate_members=True)
+async def mute(ctx, member: discord.Member = None, duration: str = None, *, reason: str = None):
+
+
+    if member is None:
+        embed = discord.Embed(title="Mute",
+                              description="The mute command can be used to mute a user",
+                              colour=0x00b0f4)
+
+        embed.add_field(name="Usage",
+                        value="`.mute <member> <duration> [reason]`\n*<member>* - The member you want to softban\n*<duration>* - The duration of the mute.\n*[reason]* - The reason for the softban (optional)",
+                        inline=False)
+        embed.add_field(name="Example",
+                        value="`.mute noobcoderyt Loser`\n\n*Noobcoder* will be softban with the reason *Loser*",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+        return
+        return
+
+    if member.top_role >= ctx.author.top_role:
+        embed = discord.Embed(title="Error!",
+                              description="You can't mute this user.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+        return
+        return
+
+    delay = parse_duration(duration) if duration else None
+    if duration and not delay:
+        embed = discord.Embed(title="Error!",
+                              description="Invalid duration format. Use 's' for seconds, 'min' for minutes, 'h' for hours, 'd' for days, 'm' for months, and 'y' for years.",
+                              colour=0xff0000)
+
+    if reason is None:
+        reason = "No reason specified"
+
+    try:
+        timeout_duration = timedelta(seconds=delay) if delay else None
+        await member.edit(timed_out_until=discord.utils.utcnow() + timeout_duration, reason=reason)
+        embed = discord.Embed(title="Muted!",
+                              description=f"{member.mention} has been soft muted!",
+                              colour=0x00c105)
+
+        embed.add_field(name="Reason",
+                        value=f"`{reason}`",
+                        inline=True)
+
+        embed.add_field(name="Duration",
+                        value=f"`{duration}`",
+                        inline=True)
+
+        await ctx.send(embed=embed)
+
+    except discord.Forbidden:
+        embed = discord.Embed(title="Error!",
+                              description="A permission related error has occured.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+
+    except discord.HTTPException as e:
+        embed = discord.Embed(title="Error!",
+                              description="An unknown error has occured",
+                              colour=0xff0000)
+
+        embed.add_field(name="Error code",
+                        value=f"`{e}`",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+
+
 
 
 @bot.event
