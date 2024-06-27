@@ -94,10 +94,10 @@ async def roll(ctx):
     await(f"{random.randint(1,6)}!!!")
 
 @bot.command()
-async def wish(ctx, arg):
+async def wish(ctx, arg: str = None):
     if "@everyone" in arg or "@here" in arg:
         await ctx.send("Nigga is trying to ping everyone ☠️")
-    elif arg == "":
+    elif is None:
         await ctx.send("You can't wish no one")
     else:
         await ctx.send(f"Happy Birthday {arg}! 🎂🎂🎂")
