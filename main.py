@@ -240,6 +240,38 @@ async def help(ctx, arg: str = None):
     await ctx.send(embed=embed)
 
 @bot.command()
+async def fetchrepos(ctx, username="noobcoderyt"):
+    url = f'https://api.github.com/users/{username}/repos'
+    headers = {
+        'Authorization': f'token {github_api}'
+    }
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code == 200:
+        repos = response.json()
+        repo_names = [repo['name'] for repo in repos]
+        message = '```\n' + '\n'.join(repo_names) + '\n```'
+        await ctx.send(message)
+    else:
+        await ctx.send(f'I failed daddy 😔')
+
+@bot.command()
+async def fetchcommits(ctx,username="noobcoderyt",repo_name="Lunix"):
+    url = f'https://api.github.com/repos/{username}/{repo_name}/commits'
+    headers = {
+        'Authorization': f'token {github_api}'
+    }
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code == 200:
+        commits = response.json()
+        commit_messages = [commit['commit']['message'] for commit in commits[:5]]
+        message = '```\n' + '\n'.join(commit_messages) + '\n```'
+        await ctx.send(message)
+    else:
+        await ctx.send(f'I failed daddy 😔')
+
+@bot.command()
 @commands.has_permissions(kick_members = True)
 async def kick(ctx, member: discord.Member = None, *, reason: str = None):
 
@@ -300,7 +332,7 @@ async def kick(ctx, member: discord.Member = None, *, reason: str = None):
 
 
 @bot.command()
-@commands.has_permissions(kick_members = True)
+@commands.has_permissions(ban_members = True)
 async def ban(ctx, member: discord.Member = None, duration: str = None, *, reason: str = None):
 
     if member is None:
