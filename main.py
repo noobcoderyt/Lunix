@@ -1,3 +1,5 @@
+import asyncio
+import re
 import discord
 from discord.ext import commands
 import time
@@ -7,15 +9,15 @@ import json
 import requests
 import google.generativeai as genai
 from datetime import timedelta
-import asyncio
 
 ai_api = "key"
 discord_api = "key"
 fact_api = "key"
+github_api = "key"
 
 
 genai.configure(api_key=ai_api)
-model = genai.GenerativeModel("gemini-1.5-flash", system_instruction="You are a discord bot called Lunix from a discord server named TheLinuxHideout. You talk like people do on whatsapp or discord. You use abbrevations for words like idk, lol, lmao. You also like to roast people.")
+model = genai.GenerativeModel("gemini-1.5-flash", system_instruction="You are a discord bot called Lunix from a discord server named TheLinuxHideout. You talk like people do on whatsapp or discord. You use abbrevations for words like idk, lol, lmao. You also like to roast people. Your answers should be under 200 characters until asked to extend")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -49,7 +51,6 @@ def parse_duration(duration_str):
 
     amount, unit = match.groups()
     return int(amount) * unit_multipliers[unit]
-
 
 
 @bot.event
@@ -119,10 +120,10 @@ async def roll(ctx):
     await(f"{random.randint(1,6)}!!!")
 
 @bot.command()
-async def wish(ctx, arg):
+async def wish(ctx, arg: str = None):
     if "@everyone" in arg or "@here" in arg:
         await ctx.send("Nigga is trying to ping everyone ☠️")
-    elif arg == "":
+    elif arg is None:
         await ctx.send("You can't wish no one")
     else:
         await ctx.send(f"Happy Birthday {arg}! 🎂🎂🎂")
@@ -130,16 +131,6 @@ async def wish(ctx, arg):
 @bot.command()
 async def kamehameha(ctx):
     await ctx.send(random.choice(kamehamehagifs))
-
-@bot.command()
-async def calculate(ctx, arg):
-    if arg == "":
-        await ctx.send("I can't calculate nothing")
-    else:
-        try:
-            await ctx.send(eval(arg))
-        except:
-            await ctx.send("Nah Im not that good")
     
 @bot.command(name="8ball")
 async def _8ball(ctx, arg):
@@ -162,14 +153,27 @@ async def meme(ctx):
                 await ctx.send('Error 404: Meme not found')
 
 @bot.command()
-async def comic(ctx):
-    response = requests.get('https://xkcd.com/info.0.json')
-    data = response.json()
-    comic_title = data['title']
-    comic_url = data['img']
-    embed = discord.Embed(title=comic_title, color=discord.Colour.blue())
-    embed.set_image(url=comic_url)
-    await ctx.send(embed=embed)
+async def comic(ctx, number=None):
+    if number is None:
+        number = random.randint(1, 2900)
+        response = requests.get(f'https://xkcd.com/{number}/info.0.json')
+        data = response.json()
+        comic_title = data['title']
+        comic_url = data['img']
+        embed = discord.Embed(title=comic_title, color=discord.Colour.blue())
+        embed.set_image(url=comic_url)
+        await ctx.send(embed=embed)
+    else:
+        try:
+            response = requests.get(f'https://xkcd.com/{number}/info.0.json')
+            data = response.json()
+            comic_title = data['title']
+            comic_url = data['img']
+            embed = discord.Embed(title=comic_title, color=discord.Colour.blue())
+            embed.set_image(url=comic_url)
+            await ctx.send(embed=embed)
+        except:
+            await ctx.send(f'I failed daddy 😔')
 
 @bot.command()
 async def joke(ctx):
@@ -206,17 +210,17 @@ async def help(ctx, arg: str = None):
         return
 
 
-
     embed = discord.Embed(title="Commands",color=discord.Color.blue(), description="""
         The prefix is '." """)
 
     embed.add_field(name="Info", value="""
                      `.help` - This command.
-                     `.fact` - Sends a fact.    
-                     `.calculate <equation>` - Solves an equation.
+                     `.fact` - Sends a fact.
                      `.info` - Displays information about this bot.
                      `.rules` - Displays *some* rules.
                      `.roles` - Displays the roles a member can get.
+                     `.fetchrepos <github username>`- Displays the public repositories of a user.
+                     `.fetchcommits <github username> <repository name>`- Displays the recent commits of a repository.
 
                     """, inline=False)
 
@@ -318,7 +322,7 @@ async def kick(ctx, member: discord.Member = None, *, reason: str = None):
                               colour=0xff0000)
 
         await ctx.send(embed=embed)
-        
+
     except discord.HTTPException as e:
         embed = discord.Embed(title="Error!",
                               description="An unknown error has occured",
@@ -330,9 +334,8 @@ async def kick(ctx, member: discord.Member = None, *, reason: str = None):
 
         await ctx.send(embed=embed)
 
-
 @bot.command()
-@commands.has_permissions(ban_members = True)
+@commands.has_permissions(kick_members = True)
 async def ban(ctx, member: discord.Member = None, duration: str = None, *, reason: str = None):
 
     if member is None:
@@ -341,7 +344,7 @@ async def ban(ctx, member: discord.Member = None, duration: str = None, *, reaso
                               colour=0x00b0f4)
 
         embed.add_field(name="Usage",
-                        value="`.ban <member> <duration> [reason]`\n*<member>* - The member you want to ban\n*[duration]* - Duration of the ban(s/min/h/d/m/y) (optional)\n*[reason]* - The reason for the ban (optional)",
+                        value="`.ban <member> <duration> [reason]`\n*<member>* - The member you want to ban\n*[duration]* - Duration of the ban (optional)\n*[reason]* - The reason for the ban (optional)",
                         inline=False)
         embed.add_field(name="Example",
                         value="`.ban noobcoderyt 60 Loser`\n\n*Noobcoder* will be banned for 1 minute with the reason *Loser*",
@@ -406,7 +409,6 @@ async def ban(ctx, member: discord.Member = None, duration: str = None, *, reaso
                         inline=False)
 
         await ctx.send(embed=embed)
-
 
 @bot.command()
 @commands.has_permissions(ban_members = True)
@@ -483,7 +485,7 @@ async def softban(ctx, member: discord.Member = None, *, reason: str = None):
                         value="`.softban <member> [reason]`\n*<member>* - The member you want to softban\n*[reason]* - The reason for the softban (optional)",
                         inline=False)
         embed.add_field(name="Example",
-                        value="`.softban noobcoderyt Loser`\n\n*Noobcoder* will be softban with the reason *Loser*",
+                        value="`.softbam noobcoderyt Loser`\n\n*Noobcoder* will be softban with the reason *Loser*",
                         inline=False)
 
         await ctx.send(embed=embed)
@@ -529,7 +531,6 @@ async def softban(ctx, member: discord.Member = None, *, reason: str = None):
                         inline=False)
 
         await ctx.send(embed=embed)
-
 
 @bot.command()
 @commands.has_permissions(moderate_members=True)
@@ -616,7 +617,7 @@ async def unmute(ctx, member: discord.Member = None, *, reason: str = None):
                               colour=0x00b0f4)
 
         embed.add_field(name="Usage",
-                        value="`.unmute <member> [reason]`\n*<member>* - The member you want to unmute\n*[reason]* - The reason for the unmute (optional)",
+                        value="`.unmute <member> <duration> [reason]`\n*<member>* - The member you want to unmute\n*[reason]* - The reason for the unmute (optional)",
                         inline=False)
         embed.add_field(name="Example",
                         value="`.unmute noobcoderyt  Not loser`\n\n*Noobcoder* will be unmuted with the reason *Not loser*",
@@ -671,8 +672,6 @@ async def unmute(ctx, member: discord.Member = None, *, reason: str = None):
         await ctx.send(embed=embed)
 
 
-
-
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
@@ -687,7 +686,6 @@ async def on_message(message):
             await message.channel.send(f'{message.author.mention} has been timed out for trying to be too smart')
         else:
             await message.reply(response.text)
-
     
     if "kys" in message.content.lower() or message.content == "NI":
         await message.reply("stfu nigga who r u")
@@ -705,7 +703,7 @@ async def on_message(message):
         await message.reply("thats what she said")
 
     if "gato" in message.content.lower():
-        for i in range(random.randint(1,30)):
+        for i in range(random.randint(1,9)):
             await message.channel.send("GATO IS BACK")
             time.sleep(0.5)
         await message.channel.send("<:tr:1248294470588563497>")
@@ -727,9 +725,6 @@ async def on_message(message):
 
     if "mrace" in message.content.lower():
         await message.reply("Mr ace more like Mr ass lmfaooooo")
-
-    if "discox" in message.content.lower():
-        await message.reply(f"Congratulations {message.author}! You are now *an* Member!")
 
     if message.content.endswith("*"):
         if message.content.startswith("*"):
