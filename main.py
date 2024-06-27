@@ -1,3 +1,5 @@
+import asyncio
+import re
 import discord
 from discord.ext import commands
 import time
@@ -27,6 +29,28 @@ coin = ["HEAD", "TAILS"]
 _8ball_ = ["very", "NAWWWWW"]
 kamehamehagifs = ["https://c.tenor.com/yOej10JYX4sAAAAM/kamehameha-ui-goku.gif","https://66.media.tumblr.com/40e19795a78fbb4dc5212b0416870bad/tumblr_p262c08aKm1wyh2j4o1_500.gif","https://media1.tenor.com/images/8f7b25ee13cfd669418c78cd50431de3/tenor.gif?itemid=11539971","https://4.bp.blogspot.com/-E_BQvOD2TsM/WNKLRZPg3MI/AAAAAAAAZZ8/hdfcuVeBjp88nJQmON6tJyTDvXZhuQtBwCLcB/s1600/Gifs+animados+Kamehameha+11.gif", "https://media.tenor.com/images/be06b296f1144d9d37dadbd22f46cf54/tenor.gif"]
 
+async def unban_after_delay(guild, user_id, delay):
+    await asyncio.sleep(delay)
+    user = await bot.fetch_user(user_id)
+    await guild.unban(user)
+
+
+def parse_duration(duration_str):
+    unit_multipliers = {
+        's': 1,
+        'min': 60,
+        'h': 3600,
+        'd': 86400,
+        'm': 2592000,  # 30 days approximation
+        'y': 31536000  # 365 days
+    }
+
+    match = re.match(r'(\d+)(s|min|h|d|m|y)', duration_str)
+    if not match:
+        return None
+
+    amount, unit = match.groups()
+    return int(amount) * unit_multipliers[unit]
 
 @bot.event
 async def on_ready():
@@ -165,7 +189,26 @@ async def fact(ctx):
 
 
 @bot.command()
-async def help(ctx):
+async def help(ctx, arg: str = None):
+
+    if arg == "moderation":
+        embed = discord.Embed(title="Moderation commands", color=discord.Color.blue(), description="""
+        Run individual commands to find out more about them!
+        """)
+
+        embed.add_field(name="Commands", value="""
+                             `.mute <member> <duration> [reason]` - The mute command can be used to mute a user
+                             `.unmute <member> [reason]` - The unmute command can be used to unmute a user
+                             `.ban <member> <duration> [reason]` - The ban command can be used to ban a user
+                             `.softban <member> [reason]` - The softban command can be used to ban and quickly unban a user
+                             `.unban <userID> [reason]` - The unban command can be used to unban a banned user
+                             `.kick <member> [reason]` - The kick command can be used to kick a user
+
+                            """, inline=False)
+        await ctx.send(embed=embed)
+        return
+
+
     embed = discord.Embed(title="Commands",color=discord.Color.blue(), description="""
         The prefix is '." """)
 
@@ -231,6 +274,405 @@ async def fetchcommits(ctx,username="noobcoderyt",repo_name="Lunix"):
     else:
         await ctx.send(f'I failed daddy 😔')
 
+@bot.command()
+@commands.has_permissions(kick_members = True)
+async def kick(ctx, member: discord.Member = None, *, reason: str = None):
+
+    if member is None:
+        embed = discord.Embed(title="Kick",
+                              description="The kick command can be used to kick a user",
+                              colour=0x00b0f4)
+
+        embed.add_field(name="Usage",
+                        value="`.kick <member> [reason]`\n*<member>* - The member you want to kick\n*[reason]* - The reason for the kick (optional)",
+                        inline=False)
+        embed.add_field(name="Example",
+                        value="`.kick noobcoderyt Loser`\n\n*Noobcoder* will be kicked with the reason *Loser*",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+        return
+
+    if member.top_role >= ctx.author.top_role:
+        embed = discord.Embed(title="Error!",
+                              description="You can't kick this user.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+        return
+
+    if reason is None:
+        reason = "No reason specified."
+    try:
+        await member.kick(reason=reason)
+        embed = discord.Embed(title="Kicked!",
+                              description=f"{member.mention} has been kicked!",
+                              colour=0x00c105)
+
+        embed.add_field(name="Reason",
+                        value=f"`{reason}`",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+
+    except discord.Forbidden:
+        embed = discord.Embed(title="Error!",
+                              description="A permission related error has occured.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+
+    except discord.HTTPException as e:
+        embed = discord.Embed(title="Error!",
+                              description="An unknown error has occured",
+                              colour=0xff0000)
+
+        embed.add_field(name="Error code",
+                        value=f"`{e}`",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+
+@bot.command()
+@commands.has_permissions(kick_members = True)
+async def ban(ctx, member: discord.Member = None, duration: str = None, *, reason: str = None):
+
+    if member is None:
+        embed = discord.Embed(title="Ban",
+                              description="The ban command can be used to ban a user",
+                              colour=0x00b0f4)
+
+        embed.add_field(name="Usage",
+                        value="`.ban <member> <duration> [reason]`\n*<member>* - The member you want to ban\n*[duration]* - Duration of the ban (optional)\n*[reason]* - The reason for the ban (optional)",
+                        inline=False)
+        embed.add_field(name="Example",
+                        value="`.ban noobcoderyt 60 Loser`\n\n*Noobcoder* will be banned for 1 minute with the reason *Loser*",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+        return
+
+    if member.top_role >= ctx.author.top_role:
+        embed = discord.Embed(title="Error!",
+                              description="You can't ban this user.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+        return
+
+    delay = parse_duration(duration) if duration else None
+    if duration and not delay:
+        embed = discord.Embed(title="Error!",
+                              description="Invalid duration format. Use 's' for seconds, 'min' for minutes, 'h' for hours, 'd' for days, 'm' for months, and 'y' for years.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+        return
+
+    if reason is None:
+        reason = "No reason specified."
+
+    try:
+        await member.ban(reason=reason)
+        embed = discord.Embed(title="Banned!",
+                              description=f"{member.mention} has been banned!",
+                              colour=0x00c105)
+
+        embed.add_field(name="Reason",
+                        value=f"`{reason}`",
+                        inline=True)
+
+        embed.add_field(name="Duration",
+                        value=f"`{duration}`",
+                        inline=True)
+
+        await ctx.send(embed=embed)
+
+        if delay:
+            await unban_after_delay(ctx.guild, member.id, delay)
+
+    except discord.Forbidden:
+        embed = discord.Embed(title="Error!",
+                              description="A permission related error has occured.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+
+    except discord.HTTPException as e:
+        embed = discord.Embed(title="Error!",
+                              description="An unknown error has occured",
+                              colour=0xff0000)
+
+        embed.add_field(name="Error code",
+                        value=f"`{e}`",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+
+@bot.command()
+@commands.has_permissions(ban_members = True)
+async def unban(ctx, userId: str = None, *, reason: str = None):
+
+    if userId is None:
+        embed = discord.Embed(title="Unban",
+                              description="The unban command can be used to unban a banned user",
+                              colour=0x00b0f4)
+
+        embed.add_field(name="Usage",
+                        value="`.unban <member> [reason]`\n*<member>* - The member you want to unban\n*[reason]* - The reason for the unban (optional)",
+                        inline=False)
+        embed.add_field(name="Example",
+                        value="`.unban 1126807595517227089 Not loser`\n\n*Noobcoder* will be unbanned with the reason *Not loser*",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+        return
+
+    if reason is None:
+        reason = "No reason specified."
+
+    user = await bot.fetch_user(userId)
+
+    try:
+        await ctx.guild.unban(user, reason=reason)
+
+        embed = discord.Embed(title="Unbanned!",
+                              description=f"{user.mention} has been unbanned!",
+                              colour=0x00c105)
+
+        embed.add_field(name="Reason",
+                        value=f"`{reason}`",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+
+    except discord.Forbidden:
+        embed = discord.Embed(title="Error!",
+                              description="A permission related error has occured.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+
+    except discord.NotFound:
+        embed = discord.Embed(title="Error!",
+                              description="User is not banned.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+
+    except discord.HTTPException as e:
+        embed = discord.Embed(title="Error!",
+                              description="An unknown error has occured",
+                              colour=0xff0000)
+
+        embed.add_field(name="Error code",
+                        value=f"`{e}`",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+
+@bot.command()
+@commands.has_permissions(ban_members = True)
+async def softban(ctx, member: discord.Member = None, *, reason: str = None):
+
+    if member is None:
+        embed = discord.Embed(title="Softban",
+                              description="The softban command can be used to ban and quickly unban a user",
+                              colour=0x00b0f4)
+
+        embed.add_field(name="Usage",
+                        value="`.softban <member> [reason]`\n*<member>* - The member you want to softban\n*[reason]* - The reason for the softban (optional)",
+                        inline=False)
+        embed.add_field(name="Example",
+                        value="`.softbam noobcoderyt Loser`\n\n*Noobcoder* will be softban with the reason *Loser*",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+        return
+
+    if member.top_role >= ctx.author.top_role:
+        embed = discord.Embed(title="Error!",
+                              description="You can't softban this user.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+        return
+
+    if reason is None:
+        reason = "No reason specified."
+    try:
+        await ctx.guild.ban(member, reason=reason)
+        await ctx.guild.unban(member, reason="Ban was a softban")
+        embed = discord.Embed(title="Soft Banned!",
+                              description=f"{member.mention} has been soft banned!",
+                              colour=0x00c105)
+
+        embed.add_field(name="Reason",
+                        value=f"`{reason}`",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+
+    except discord.Forbidden:
+        embed = discord.Embed(title="Error!",
+                              description="A permission related error has occured.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+
+    except discord.HTTPException as e:
+        embed = discord.Embed(title="Error!",
+                              description="An unknown error has occured",
+                              colour=0xff0000)
+
+        embed.add_field(name="Error code",
+                        value=f"`{e}`",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+
+@bot.command()
+@commands.has_permissions(moderate_members=True)
+async def mute(ctx, member: discord.Member = None, duration: str = None, *, reason: str = None):
+
+
+    if member is None:
+        embed = discord.Embed(title="Mute",
+                              description="The mute command can be used to mute a user",
+                              colour=0x00b0f4)
+
+        embed.add_field(name="Usage",
+                        value="`.mute <member> <duration> [reason]`\n*<member>* - The member you want to mute\n*<duration>* - The duration of the mute.\n*[reason]* - The reason for the mute (optional)",
+                        inline=False)
+        embed.add_field(name="Example",
+                        value="`.mute noobcoderyt Loser`\n\n*Noobcoder* will be muted with the reason *Loser*",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+        return
+        return
+
+    if member.top_role >= ctx.author.top_role:
+        embed = discord.Embed(title="Error!",
+                              description="You can't mute this user.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+        return
+        return
+
+    delay = parse_duration(duration) if duration else None
+    if duration and not delay:
+        embed = discord.Embed(title="Error!",
+                              description="Invalid duration format. Use 's' for seconds, 'min' for minutes, 'h' for hours, 'd' for days, 'm' for months, and 'y' for years.",
+                              colour=0xff0000)
+
+    if reason is None:
+        reason = "No reason specified"
+
+    try:
+        timeout_duration = timedelta(seconds=delay) if delay else None
+        await member.edit(timed_out_until=discord.utils.utcnow() + timeout_duration, reason=reason)
+        embed = discord.Embed(title="Muted!",
+                              description=f"{member.mention} has been muted!",
+                              colour=0x00c105)
+
+        embed.add_field(name="Reason",
+                        value=f"`{reason}`",
+                        inline=True)
+
+        embed.add_field(name="Duration",
+                        value=f"`{duration}`",
+                        inline=True)
+
+        await ctx.send(embed=embed)
+
+    except discord.Forbidden:
+        embed = discord.Embed(title="Error!",
+                              description="A permission related error has occured.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+
+    except discord.HTTPException as e:
+        embed = discord.Embed(title="Error!",
+                              description="An unknown error has occured",
+                              colour=0xff0000)
+
+        embed.add_field(name="Error code",
+                        value=f"`{e}`",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+
+@bot.command()
+@commands.has_permissions(moderate_members=True)
+async def unmute(ctx, member: discord.Member = None, *, reason: str = None):
+
+
+    if member is None:
+        embed = discord.Embed(title="Unmute",
+                              description="The unmute command can be used to unmute a user",
+                              colour=0x00b0f4)
+
+        embed.add_field(name="Usage",
+                        value="`.unmute <member> <duration> [reason]`\n*<member>* - The member you want to unmute\n*[reason]* - The reason for the unmute (optional)",
+                        inline=False)
+        embed.add_field(name="Example",
+                        value="`.unmute noobcoderyt  Not loser`\n\n*Noobcoder* will be unmuted with the reason *Not loser*",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+        return
+        return
+
+    if member.top_role >= ctx.author.top_role:
+        embed = discord.Embed(title="Error!",
+                              description="You can't unmute this user.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+        return
+        return
+
+
+
+    if reason is None:
+        reason = "No reason specified"
+
+    try:
+        await member.edit(timed_out_until=None, reason=reason)
+        embed = discord.Embed(title="Unmuted!",
+                              description=f"{member.mention} has been unmuted!",
+                              colour=0x00c105)
+
+        embed.add_field(name="Reason",
+                        value=f"`{reason}`",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+
+    except discord.Forbidden:
+        embed = discord.Embed(title="Error!",
+                              description="A permission related error has occured.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+
+    except discord.HTTPException as e:
+        embed = discord.Embed(title="Error!",
+                              description="An unknown error has occured",
+                              colour=0xff0000)
+
+        embed.add_field(name="Error code",
+                        value=f"`{e}`",
+                        inline=False)
+
+        await ctx.send(embed=embed)
+
+
+
+
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
@@ -262,7 +704,7 @@ async def on_message(message):
         await message.reply("thats what she said")
 
     if "gato" in message.content.lower():
-        for i in range(random.randint(1,9)):
+        for i in range(random.randint(1,30)):
             await message.channel.send("GATO IS BACK")
             time.sleep(0.5)
         await message.channel.send("<:tr:1248294470588563497>")
