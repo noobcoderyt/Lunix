@@ -564,7 +564,7 @@ async def unmute(ctx, member: discord.Member = None, *, reason: str = None):
                               colour=0x00b0f4)
 
         embed.add_field(name="Usage",
-                        value="`.unmute <member> <duration> [reason]`\n*<member>* - The member you want to unmute\n*[reason]* - The reason for the unmute (optional)",
+                        value="`.unmute <member> [reason]`\n*<member>* - The member you want to unmute\n*[reason]* - The reason for the unmute (optional)",
                         inline=False)
         embed.add_field(name="Example",
                         value="`.unmute noobcoderyt  Not loser`\n\n*Noobcoder* will be unmuted with the reason *Not loser*",
