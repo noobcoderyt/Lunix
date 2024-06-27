@@ -97,7 +97,7 @@ async def roll(ctx):
 async def wish(ctx, arg: str = None):
     if "@everyone" in arg or "@here" in arg:
         await ctx.send("Nigga is trying to ping everyone ☠️")
-    elif is None:
+    elif arg is None:
         await ctx.send("You can't wish no one")
     else:
         await ctx.send(f"Happy Birthday {arg}! 🎂🎂🎂")
