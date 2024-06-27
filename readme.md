@@ -17,6 +17,8 @@ Join [here](https://discord.com/invite/xHVECSnRZ4)
 - `.comic` - Sends a comic.
 - `.joke` - Sends a joke
 - `.fact` - Sends a fact.
+- `.fetchrepos [github username]` - Sends the public repositories of a user.
+- `.fetchcommits [github username] [repository name]` - Sends the latest commits of a repository.
 - `.mute <member> <duration> [reason]` - The mute command can be used to mute a user
 - `.unmute <member> [reason]` - The unmute command can be used to unmute a user
 - `.ban <member> <duration> [reason]` - The ban command can be used to ban a user
