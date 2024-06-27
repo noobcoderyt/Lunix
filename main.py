@@ -193,6 +193,27 @@ async def help(ctx):
     embed.set_footer(text="Note: Currently Under Development")
 
     await ctx.send(embed=embed)
+
+@bot.command()
+@commands.has_permissions(kick_members = True)
+async def kick(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send("you need to provide a member to kick")
+        return
+
+    if member.top_role >= ctx.author.top_role:
+        await ctx.send("you don't have enough permissions to use this command.")
+        return
+    try:
+        await member.kick()
+        await ctx.send(f"{member.mention} has been kicked")
+
+    except discord.Forbidden:
+        await ctx.send("I don't have enough permissions to kick this member")
+    except discord.HTTPException as e:
+        await ctx.send(f"an error has occured: {e}")
+
+
     
 @bot.event
 async def on_message(message):
