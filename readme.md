@@ -17,3 +17,5 @@ Join [here](https://discord.com/invite/xHVECSnRZ4)
 - `.comic` - Sends a comic.
 - `.joke` - Sends a joke
 - `.fact` - Sends a fact.
+- `.fetchrepos [github username]` - Sends the public repositories of a user.
+- `.fetchcommits [github username] [repository name]` - Sends the latest commits of a repository.
