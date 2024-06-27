@@ -33,6 +33,24 @@ async def unban_after_delay(guild, user_id, delay):
     await guild.unban(user)
 
 
+def parse_duration(duration_str):
+    unit_multipliers = {
+        's': 1,
+        'min': 60,
+        'h': 3600,
+        'd': 86400,
+        'm': 2592000,  # 30 days approximation
+        'y': 31536000  # 365 days
+    }
+
+    match = re.match(r'(\d+)(s|min|h|d|m|y)', duration_str)
+    if not match:
+        return None
+
+    amount, unit = match.groups()
+    return int(amount) * unit_multipliers[unit]
+
+
 
 @bot.event
 async def on_ready():
@@ -263,7 +281,7 @@ async def kick(ctx, member: discord.Member = None, *, reason: str = None):
 
 @bot.command()
 @commands.has_permissions(kick_members = True)
-async def ban(ctx, member: discord.Member = None, duration: int=0, *, reason: str = None):
+async def ban(ctx, member: discord.Member = None, duration: str = None, *, reason: str = None):
 
     if member is None:
         embed = discord.Embed(title="Ban",
@@ -271,7 +289,7 @@ async def ban(ctx, member: discord.Member = None, duration: int=0, *, reason: st
                               colour=0x00b0f4)
 
         embed.add_field(name="Usage",
-                        value="`.ban <member> <duration> [reason]`\n*<member>* - The member you want to ban\n*[duration]* - Duration of the ban (optional)\n*[reason]* - The reason for the ban (optional)",
+                        value="`.ban <member> <duration> [reason]`\n*<member>* - The member you want to ban\n*[duration]* - Duration of the ban(s/min/h/d/m/y) (optional)\n*[reason]* - The reason for the ban (optional)",
                         inline=False)
         embed.add_field(name="Example",
                         value="`.ban noobcoderyt 60 Loser`\n\n*Noobcoder* will be banned for 1 minute with the reason *Loser*",
@@ -288,8 +306,18 @@ async def ban(ctx, member: discord.Member = None, duration: int=0, *, reason: st
         await ctx.send(embed=embed)
         return
 
+    delay = parse_duration(duration) if duration else None
+    if duration and not delay:
+        embed = discord.Embed(title="Error!",
+                              description="Invalid duration format. Use 's' for seconds, 'min' for minutes, 'h' for hours, 'd' for days, 'm' for months, and 'y' for years.",
+                              colour=0xff0000)
+
+        await ctx.send(embed=embed)
+        return
+
     if reason is None:
         reason = "No reason specified."
+
     try:
         await member.ban(reason=reason)
         embed = discord.Embed(title="Banned!",
@@ -306,8 +334,8 @@ async def ban(ctx, member: discord.Member = None, duration: int=0, *, reason: st
 
         await ctx.send(embed=embed)
 
-        if duration > 0:
-            await unban_after_delay(ctx.guild, member.id, duration)
+        if delay:
+            await unban_after_delay(ctx.guild, member.id, delay)
 
     except discord.Forbidden:
         embed = discord.Embed(title="Error!",
@@ -328,8 +356,6 @@ async def ban(ctx, member: discord.Member = None, duration: int=0, *, reason: st
         await ctx.send(embed=embed)
 
 
-
-    
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
