@@ -186,7 +186,27 @@ async def fact(ctx):
 
 
 @bot.command()
-async def help(ctx):
+async def help(ctx, arg: str = None):
+
+    if arg == "moderation":
+        embed = discord.Embed(title="Moderation commands", color=discord.Color.blue(), description="""
+        Run individual commands to find out more about them!
+        """)
+
+        embed.add_field(name="Commands", value="""
+                             `.mute <member> <duration> [reason]` - The mute command can be used to mute a user
+                             `.unmute <member> [reason]` - The unmute command can be used to unmute a user
+                             `.ban <member> <duration> [reason]` - The ban command can be used to ban a user
+                             `.softban <member> [reason]` - The softban command can be used to ban and quickly unban a user
+                             `.unban <userID> [reason]` - The unban command can be used to unban a banned user
+                             `.kick <member> [reason]` - The kick command can be used to kick a user
+
+                            """, inline=False)
+        await ctx.send(embed=embed)
+        return
+
+
+
     embed = discord.Embed(title="Commands",color=discord.Color.blue(), description="""
         The prefix is '." """)
 
