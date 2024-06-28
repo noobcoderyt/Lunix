@@ -1,3 +1,4 @@
+# Libraries
 import asyncio
 import re
 import discord
@@ -13,33 +14,37 @@ from dotenv import load_dotenv
 import os
 import asyncio
 
+# APIs
 load_dotenv()
-
 ai_api = os.getenv("ai_api")
 discord_api = os.getenv("discord_api")
 fact_api = os.getenv("fact_api")
 github_api = os.getenv("github_api")
 
-
+# Initializing AI
 genai.configure(api_key=ai_api)
 model = genai.GenerativeModel("gemini-1.5-flash", system_instruction="You are a discord bot called Lunix from a discord server named TheLinuxHideout. You talk like people do on whatsapp or discord. You use abbrevations for words like idk, lol, lmao. You also like to roast people. Your answers should be under 200 characters until asked to extend")
 
+# Discord API Initialization
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
-
 bot = commands.Bot(command_prefix=".", intents=intents, help_command=None)
 
+# Data for fun commands
 coin = ["HEAD", "TAILS"]
 _8ball_ = ["very", "NAWWWWW"]
 kamehamehagifs = ["https://c.tenor.com/yOej10JYX4sAAAAM/kamehameha-ui-goku.gif","https://66.media.tumblr.com/40e19795a78fbb4dc5212b0416870bad/tumblr_p262c08aKm1wyh2j4o1_500.gif","https://media1.tenor.com/images/8f7b25ee13cfd669418c78cd50431de3/tenor.gif?itemid=11539971","https://4.bp.blogspot.com/-E_BQvOD2TsM/WNKLRZPg3MI/AAAAAAAAZZ8/hdfcuVeBjp88nJQmON6tJyTDvXZhuQtBwCLcB/s1600/Gifs+animados+Kamehameha+11.gif", "https://media.tenor.com/images/be06b296f1144d9d37dadbd22f46cf54/tenor.gif"]
 
+# Cooldowns
+cooldowns = {}
+cooldown_time = 600
 
+# Moderation functions
 async def unban_after_delay(guild, user_id, delay):
     await asyncio.sleep(delay)
     user = await bot.fetch_user(user_id)
     await guild.unban(user)
-
 
 def parse_duration(duration_str):
     unit_multipliers = {
@@ -58,15 +63,15 @@ def parse_duration(duration_str):
     amount, unit = match.groups()
     return int(amount) * unit_multipliers[unit]
 
-cooldowns = {}
-cooldown_time = 600
 
-
+# Starting the bot
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
     await bot.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name="TheLinuxHideout"))
 
+
+### Prefix Commands
 @bot.command()
 async def info(ctx):
     embed = discord.Embed(title="Lunix",color=discord.Color.blue(), description="""
@@ -82,7 +87,6 @@ async def info(ctx):
     embed.set_footer(text="Note: Currently Under Development")
 
     await ctx.send(embed=embed)
-
 
 @bot.command()
 async def roles(ctx):
@@ -197,7 +201,6 @@ async def fact(ctx):
     fact_text = fact_data[0]['fact']
     await ctx.send(fact_text)
 
-
 @bot.command()
 async def help(ctx, arg: str = None):
 
@@ -283,6 +286,13 @@ async def fetchcommits(ctx,username="noobcoderyt",repo_name="Lunix"):
         await ctx.send(message)
     else:
         await ctx.send(f'I failed daddy 😔')
+
+
+
+
+### Moderation commands start here
+
+
 
 @bot.command()
 @commands.has_permissions(kick_members = True)
@@ -682,7 +692,10 @@ async def unmute(ctx, member: discord.Member = None, *, reason: str = None):
 
 
 
+### Moderation commands end here
 
+
+# Message responses
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
