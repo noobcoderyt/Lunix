@@ -5,6 +5,8 @@ import random
 import aiohttp
 import json
 import requests
+from dotenv import load_dotenv
+import os
 import google.generativeai as genai
 from datetime import timedelta
 import aiosqlite
@@ -12,6 +14,7 @@ import asyncio
 import string
 import re
 
+load_dotenv()
 ai_api = os.getenv("key")
 discord_api = os.getenv("key")
 fact_api = os.getenv("key")
