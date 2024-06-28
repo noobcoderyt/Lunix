@@ -673,7 +673,7 @@ async def unmute(ctx, member: discord.Member = None, *, reason: str = None):
         await ctx.send(embed=embed)
 
 
-
+# Message Events
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
@@ -741,6 +741,7 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
+# Warning system
 @bot.command()
 @commands.has_permissions(moderate_members=True)
 async def warnadd(ctx, member: discord.Member = None, reason: str = None):
