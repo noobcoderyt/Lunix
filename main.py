@@ -274,8 +274,6 @@ async def fetchcommits(ctx,username="noobcoderyt",repo_name="Lunix"):
 
 ### Moderation commands start here
 
-
-
 @bot.command()
 @commands.has_permissions(kick_members = True)
 async def kick(ctx, member: discord.Member = None, *, reason: str = None):
@@ -706,10 +704,16 @@ async def on_message(message):
     if "hard" in message.content.lower():
         await message.reply("thats what she said")
 
+     user_id = message.author.id
     if "gato" in message.content.lower():
+        user_id = message.author.id
+        if user_id in cooldowns and time.time() < cooldowns[user_id]:
+            await message.channel.send("Dont try to spam bozo")
+            return
+        cooldowns[user_id] = time.time() + cooldown_time
         for i in range(random.randint(1,5)):
             await message.channel.send("GATO IS BACK")
-            await asyncio.sleep(0.5)
+            asyncio.sleep(0.5)
         await message.channel.send("<:tr:1248294470588563497>")
 
     if "improved" in message.content.lower():
