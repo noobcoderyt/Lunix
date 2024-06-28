@@ -200,7 +200,26 @@ async def fact(ctx):
     await ctx.send(fact_text)
 
 @bot.command()
-async def help(ctx):
+async def help(ctx, arg: str = None):
+
+    if arg == "moderation":
+        embed = discord.Embed(title="Moderation commands", color=discord.Color.blue(), description="""
+        Run individual commands to find out more about them!
+        """)
+
+        embed.add_field(name="Commands", value="""
+                             `.mute <member> <duration> [reason]` - The mute command can be used to mute a user
+                             `.unmute <member> [reason]` - The unmute command can be used to unmute a user
+                             `.ban <member> <duration> [reason]` - The ban command can be used to ban a user
+                             `.softban <member> [reason]` - The softban command can be used to ban and quickly unban a user
+                             `.unban <userID> [reason]` - The unban command can be used to unban a banned user
+                             `.kick <member> [reason]` - The kick command can be used to kick a user
+
+                            """, inline=False)
+        await ctx.send(embed=embed)
+        return
+
+
     embed = discord.Embed(title="Commands",color=discord.Color.blue(), description="""
         The prefix is '." """)
 
@@ -213,7 +232,7 @@ async def help(ctx):
                      `.fetchrepos <github username>`- Displays the public repositories of a user.
                      `.fetchcommits <github username> <repository name>`- Displays the recent commits of a repository.
                     `.warnadd <user> <reason>` - Adds a warning to a user.
-                    `.warnview <caseID>` - Views a warning's case.
+                     `.warnview <caseID>` - Views a warning's case.
                     `.warnremove <user> <caseID> - Removes a user's warning
 
                     """, inline=False)
@@ -236,6 +255,7 @@ async def help(ctx):
     embed.set_footer(text="Note: Currently Under Development")
 
     await ctx.send(embed=embed)
+
 
 @bot.command()
 async def fetchrepos(ctx, username="noobcoderyt"):
