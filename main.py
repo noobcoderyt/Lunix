@@ -1,24 +1,24 @@
-import asyncio
-import re
 import discord
 from discord.ext import commands
 import time
 import random
 import aiohttp
 import json
+import discord.ext.commands
 import requests
 import google.generativeai as genai
 from datetime import timedelta
-from dotenv import load_dotenv
-import os
+import aiosqlite
 import asyncio
+import string
+import re
 
-load_dotenv()
+import discord.ext
 
-ai_api = os.getenv("ai_api")
-discord_api = os.getenv("discord_api")
-fact_api = os.getenv("fact_api")
-github_api = os.getenv("github_api")
+ai_api = "key"
+discord_api = "key"
+fact_api = "key"
+github_api = "key"
 
 
 genai.configure(api_key=ai_api)
@@ -30,16 +30,7 @@ intents.members = True
 
 bot = commands.Bot(command_prefix=".", intents=intents, help_command=None)
 
-coin = ["HEAD", "TAILS"]
-_8ball_ = ["very", "NAWWWWW"]
 kamehamehagifs = ["https://c.tenor.com/yOej10JYX4sAAAAM/kamehameha-ui-goku.gif","https://66.media.tumblr.com/40e19795a78fbb4dc5212b0416870bad/tumblr_p262c08aKm1wyh2j4o1_500.gif","https://media1.tenor.com/images/8f7b25ee13cfd669418c78cd50431de3/tenor.gif?itemid=11539971","https://4.bp.blogspot.com/-E_BQvOD2TsM/WNKLRZPg3MI/AAAAAAAAZZ8/hdfcuVeBjp88nJQmON6tJyTDvXZhuQtBwCLcB/s1600/Gifs+animados+Kamehameha+11.gif", "https://media.tenor.com/images/be06b296f1144d9d37dadbd22f46cf54/tenor.gif"]
-
-
-async def unban_after_delay(guild, user_id, delay):
-    await asyncio.sleep(delay)
-    user = await bot.fetch_user(user_id)
-    await guild.unban(user)
-
 
 def parse_duration(duration_str):
     unit_multipliers = {
@@ -60,8 +51,6 @@ def parse_duration(duration_str):
 
 cooldowns = {}
 cooldown_time = 600
-
-
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
@@ -103,47 +92,47 @@ async def rules(ctx):
 @bot.command()
 async def flip(ctx):
     await ctx.send(f"🪙 {ctx.author} flipped a coin!")
-    asyncio.sleep(0.5)
-    await ctx.send("*coin falls down dramatically*")
-    asyncio.sleep(0.5)
-    await ctx.send(".")
-    asyncio.sleep(0.5)
-    await ctx.send("..")
-    asyncio.sleep(0.5)
-    await ctx.send("...")
-    asyncio.sleep(0.5)
-    await(f"{random.choice(coin)}!!!")
+    await asyncio.sleep(0.5)
+    msg = await ctx.send("*coin falls down dramatically*")
+    await asyncio.sleep(0.5)
+
+    dot = ""
+    for n in range(0, 3):
+        dot += "."
+        await msg.edit(content=dot)
+        await asyncio.sleep(0.5)
+    await ctx.send(f"{random.choice(["Heads", "Tails"])}!!!")
 
 @bot.command()
 async def roll(ctx):
     await ctx.send(f"🎲 {ctx.author} rolled a dice!")
-    asyncio.sleep(0.5)
-    await ctx.send("*dice rolls down dramatically*")
-    asyncio.sleep(0.5)
-    await ctx.send(".")
-    asyncio.sleep(0.5)
-    await ctx.send("..")
-    asyncio.sleep(0.5)
-    await ctx.send("...")
-    asyncio.sleep(0.5)
-    await(f"{random.randint(1,6)}!!!")
+    await asyncio.sleep(0.5)
+    msg = await ctx.send("*dice rolls down dramatically*")
+    await asyncio.sleep(0.5)
+
+    dot = ""
+    for n in range(0, 3):
+        dot += "."
+        await msg.edit(content=dot)
+        await asyncio.sleep(0.5)
+    await ctx.send(f"{random.randint(1,6)}!!!")
 
 @bot.command()
-async def wish(ctx, arg: str = None):
-    if "@everyone" in arg or "@here" in arg:
-        await ctx.send("Nigga is trying to ping everyone ☠️")
-    elif arg is None:
+async def wish(ctx, member: str = None):
+    if member is None:
         await ctx.send("You can't wish no one")
+    elif "@everyone" in member or "@here" in member:
+        await ctx.send("Nigga is trying to ping everyone ☠️")
     else:
-        await ctx.send(f"Happy Birthday {arg}! 🎂🎂🎂")
+        await ctx.send(f"Happy Birthday {member}! 🎂🎂🎂")
 
 @bot.command()
 async def kamehameha(ctx):
     await ctx.send(random.choice(kamehamehagifs))
     
 @bot.command(name="8ball")
-async def _8ball(ctx, arg):
-    await ctx.send(random.choice(_8ball_))
+async def _8ball(ctx):
+    await ctx.send(random.choice(["very", "NAWWWWW"]))
 
 @bot.command()
 async def prowler(ctx):
@@ -199,26 +188,7 @@ async def fact(ctx):
 
 
 @bot.command()
-async def help(ctx, arg: str = None):
-
-    if arg == "moderation":
-        embed = discord.Embed(title="Moderation commands", color=discord.Color.blue(), description="""
-        Run individual commands to find out more about them!
-        """)
-
-        embed.add_field(name="Commands", value="""
-                             `.mute <member> <duration> [reason]` - The mute command can be used to mute a user
-                             `.unmute <member> [reason]` - The unmute command can be used to unmute a user
-                             `.ban <member> <duration> [reason]` - The ban command can be used to ban a user
-                             `.softban <member> [reason]` - The softban command can be used to ban and quickly unban a user
-                             `.unban <userID> [reason]` - The unban command can be used to unban a banned user
-                             `.kick <member> [reason]` - The kick command can be used to kick a user
-
-                            """, inline=False)
-        await ctx.send(embed=embed)
-        return
-
-
+async def help(ctx):
     embed = discord.Embed(title="Commands",color=discord.Color.blue(), description="""
         The prefix is '." """)
 
@@ -230,6 +200,9 @@ async def help(ctx, arg: str = None):
                      `.roles` - Displays the roles a member can get.
                      `.fetchrepos <github username>`- Displays the public repositories of a user.
                      `.fetchcommits <github username> <repository name>`- Displays the recent commits of a repository.
+                    `.warnadd <user> <reason>` - Adds a warning to a user.
+                    `.warnview <caseID>` - Views a warning's case.
+                    `.warnremove <user> <caseID> - Removes a user's warning
 
                     """, inline=False)
 
@@ -681,8 +654,6 @@ async def unmute(ctx, member: discord.Member = None, *, reason: str = None):
         await ctx.send(embed=embed)
 
 
-
-
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
@@ -691,12 +662,14 @@ async def on_message(message):
     if message.channel.id == 1253742174584180849:
         chat = model.start_chat(history=[])
         response = chat.send_message(message.content)
-        if "@" in response.text or "?ban" in response.text or "?kick" in response.text or "?mute" in response.text or "?obliterate" in response.text or "?eliminate" in response.text:
+        if re.search("@|?ban|?mute|?obliterate|?eliminate", response.text):
             duration = timedelta(minutes=60)
             await message.author.timeout(duration, reason="trying to be too smart")
             await message.channel.send(f'{message.author.mention} has been timed out for trying to be too smart')
         else:
             await message.reply(response.text)
+
+    
     
     if "kys" in message.content.lower() or message.content == "NI":
         await message.reply("stfu nigga who r u")
@@ -714,14 +687,9 @@ async def on_message(message):
         await message.reply("thats what she said")
 
     if "gato" in message.content.lower():
-        user_id = message.author.id
-        if user_id in cooldowns and time.time() < cooldowns[user_id]:
-            await message.channel.send("Dont try to spam bozo")
-            return
-        cooldowns[user_id] = time.time() + cooldown_time
         for i in range(random.randint(1,5)):
             await message.channel.send("GATO IS BACK")
-            time.sleep(0.5)
+            await asyncio.sleep(0.5)
         await message.channel.send("<:tr:1248294470588563497>")
 
     if "improved" in message.content.lower():
@@ -748,9 +716,124 @@ async def on_message(message):
         else:
             await message.reply("<:Nerd:1156881557680820284>")
     
-    if message.content == "LLL" or message.content == "LL" or message.content == "L":
+    if re.search("LLL|LL|L", message.content):
         await message.reply("🫵")
 
     await bot.process_commands(message)
+
+@bot.command()
+@commands.has_permissions(moderate_members=True)
+async def warnadd(ctx, member: discord.Member = None, reason: str = None):
+    conn = await aiosqlite.connect("warnings.sqlite")
+    cursor = await conn.cursor()
+
+    await cursor.execute("""CREATE TABLE IF NOT EXISTS warnings (userid INTEGER, caseid TEXT, reason TEXT, moderatorid INTEGER)""")
+
+    if member is None or member.bot:
+            await ctx.send("> ❓ | Please provide a valid member to warn.")
+    elif reason is None:
+            await ctx.send("> ❓ | Please provide a reason to warn.")
+    elif member == ctx.author:
+        await ctx.send("> ❌ | You cannot warn yourself.")
+    elif member.top_role >= ctx.author.top_role:
+        await ctx.send("> ❌ | You can't warn this user as they have a higher role than you or are the same.")
+    else:
+        capitalLetters, numbers = string.ascii_uppercase, string.digits
+
+        warnId = "LX-"
+        for n in range(4):
+            warnId += random.choice(capitalLetters)
+            warnId += random.choice(numbers)
+
+        membertoInt = int(member.id)
+
+        await cursor.execute("""INSERT INTO warnings (userid, caseid, reason, moderatorid) VALUES (?, ?, ?, ?)""", (membertoInt, warnId, reason, ctx.author.id,))
+        await conn.commit()
+        userWarnEmbed = discord.Embed(title="", description=f"You have received a **warning** from **The Linux Hideout**\n\nReason: ``{reason}``\n\nIf you believe your warning was a mistake, please contact a Moderator and mention this case ID: ``{warnId}``.", color=discord.Color.blue())
+        await ctx.send(f"> ✅ | {member} has successfully been warned.")
+        await member.send(embed=userWarnEmbed)
+
+        await cursor.execute("""SELECT userid FROM warnings WHERE userid = ?""", (membertoInt,))
+        all = await cursor.fetchall()
+
+        if len(all) == 5:
+            await member.send("> 🔨 |  You have been banned as you have received ``5 warnings``")
+            await member.ban(reason="This user has reached 5 warnings.")
+        else:
+            return
+    
+
+@warnadd.error
+async def waerror(ctx, error):
+    if isinstance(error, commands.MemberNotFound):
+        await ctx.send("> ❌ | Please enter a **valid** member to warn.")
+    elif isinstance(error, commands.MissingPermissions):
+        await ctx.send("> ❌ | You don't have enough permissions to warn.")
+    
+
+
+@bot.command()
+@commands.has_permissions(moderate_members=True)
+async def warnremove(ctx, member: discord.Member = None, caseId: str = None):
+    conn = await aiosqlite.connect("warnings.sqlite")
+    cursor = await conn.cursor()
+
+    if member is None or member.bot:
+        await ctx.send("> ❓ | Please provide a valid member to remove the warning")
+    elif caseId is None:
+        await ctx.send("> ❓ | Please provide a case ID")
+    elif member == ctx.author:
+        await ctx.send("> ❌ | You cannot remove your own warnings.")
+    elif member.top_role >= ctx.author.top_role:
+        await ctx.send("> ❌ | You can't remove the warning of this user as they have a higher role than you or are the same.")
+    else:
+        memberToInt = int(member.id)
+        await cursor.execute("""SELECT userid, caseid from warnings WHERE caseid = ? AND userid = ?""", (caseId, memberToInt,))
+        check = await cursor.fetchone()
+
+        if check:
+            await cursor.execute("""DELETE FROM warnings WHERE caseid = ?""", (caseId,))
+            await conn.commit()
+
+            userRmvWarnEmbed = discord.Embed(title="", description=f"> Your warning with the case ID ``{caseId}`` has been removed by {ctx.author}", color=discord.Color.blue())
+            await member.send(embed=userRmvWarnEmbed)
+            await ctx.send(f"> ✅ | {member}'s warning has been removed.")
+        else:
+            await ctx.send("> ❌ | Nothing found.")
+        await conn.close()
+
+@warnremove.error
+async def wrerror(ctx, error):
+    if isinstance(error, commands.MemberNotFound):
+        await ctx.send("Please provide a **valid** member to warn.")
+    elif isinstance(error, commands.MissingPermissions):
+        await ctx.send("> ❌ | You don't have enough permissions to remove someone's warning.")
+
+
+
+@bot.command()
+@commands.has_permissions(moderate_members=True)
+async def warnview(ctx, caseId: str = None):
+    if caseId is None:
+        await ctx.send("> ❓ | Please provide a case ID")
+    else:
+        conn = await aiosqlite.connect("warnings.sqlite")
+        cursor = await conn.cursor()
+
+        await cursor.execute("""SELECT caseid, userid, reason, moderatorid FROM warnings WHERE caseid = ?""", (caseId,))
+        case = await cursor.fetchone()
+
+        if case:
+            caseEmbed = discord.Embed(title=f"Case {case[0]}", description=f"User warned: <@{case[1]}>\nModerator: <@{case[3]}>\nReason: ``{case[2]}``", color=discord.Color.blue())
+            await ctx.send(embed=caseEmbed)
+        else:
+            await ctx.send("> ❌ | There is no such case ID in my database.")
+        await conn.close()
+
+@warnview.error
+async def wverror(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("> ❌ | You don't have enough permissions view warnings.")
+        
 
 bot.run(discord_api)
