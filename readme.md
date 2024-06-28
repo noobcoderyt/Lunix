@@ -25,3 +25,6 @@ Join [here](https://discord.com/invite/xHVECSnRZ4)
 - `.softban <member> [reason]` - The softban command can be used to ban and quickly unban a user
 - `.unban <userID> [reason]` - The unban command can be used to unban a banned user
 - `.kick <member> [reason]` - The kick command can be used to kick a user
+- `.warnadd <user> <reason>` - Adds a warning to a user.
+- `.warnview <caseID>` - Views a warning's case.
+- `.warnremove <user> <caseID>` - Removes a user's warning.
