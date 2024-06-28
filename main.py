@@ -7,11 +7,15 @@ import json
 import requests
 import google.generativeai as genai
 from datetime import timedelta
+from dotenv import load_dotenv
+import os
 
-ai_api = "key"
-discord_api = "key"
-fact_api = "key"
-github_api = "key"
+load_dotenv()
+
+ai_api = os.getenv("ai_api")
+discord_api = os.getenv("discord_api")
+fact_api = os.getenv("fact_api")
+github_api = os.getenv("github_api")
 
 
 genai.configure(api_key=ai_api)
