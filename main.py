@@ -4,7 +4,6 @@ import time
 import random
 import aiohttp
 import json
-import discord.ext.commands
 import requests
 import google.generativeai as genai
 from datetime import timedelta
@@ -13,12 +12,10 @@ import asyncio
 import string
 import re
 
-import discord.ext
-
-ai_api = "key"
-discord_api = "key"
-fact_api = "key"
-github_api = "key"
+ai_api = os.getenv("key")
+discord_api = os.getenv("key")
+fact_api = os.getenv("key")
+github_api = os.getenv("key")
 
 
 genai.configure(api_key=ai_api)
