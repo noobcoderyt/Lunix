@@ -9,11 +9,16 @@ import json
 import requests
 import google.generativeai as genai
 from datetime import timedelta
+from dotenv import load_dotenv
+import os
+import asyncio
 
-ai_api = "key"
-discord_api = "key"
-fact_api = "key"
-github_api = "key"
+load_dotenv()
+
+ai_api = os.getenv("ai_api")
+discord_api = os.getenv("discord_api")
+fact_api = os.getenv("fact_api")
+github_api = os.getenv("github_api")
 
 
 genai.configure(api_key=ai_api)
@@ -28,6 +33,7 @@ bot = commands.Bot(command_prefix=".", intents=intents, help_command=None)
 coin = ["HEAD", "TAILS"]
 _8ball_ = ["very", "NAWWWWW"]
 kamehamehagifs = ["https://c.tenor.com/yOej10JYX4sAAAAM/kamehameha-ui-goku.gif","https://66.media.tumblr.com/40e19795a78fbb4dc5212b0416870bad/tumblr_p262c08aKm1wyh2j4o1_500.gif","https://media1.tenor.com/images/8f7b25ee13cfd669418c78cd50431de3/tenor.gif?itemid=11539971","https://4.bp.blogspot.com/-E_BQvOD2TsM/WNKLRZPg3MI/AAAAAAAAZZ8/hdfcuVeBjp88nJQmON6tJyTDvXZhuQtBwCLcB/s1600/Gifs+animados+Kamehameha+11.gif", "https://media.tenor.com/images/be06b296f1144d9d37dadbd22f46cf54/tenor.gif"]
+
 
 async def unban_after_delay(guild, user_id, delay):
     await asyncio.sleep(delay)
@@ -51,6 +57,10 @@ def parse_duration(duration_str):
 
     amount, unit = match.groups()
     return int(amount) * unit_multipliers[unit]
+
+cooldowns = {}
+cooldown_time = 600
+
 
 @bot.event
 async def on_ready():
@@ -93,29 +103,29 @@ async def rules(ctx):
 @bot.command()
 async def flip(ctx):
     await ctx.send(f"🪙 {ctx.author} flipped a coin!")
-    time.sleep(0.5)
+    asyncio.sleep(0.5)
     await ctx.send("*coin falls down dramatically*")
-    time.sleep(0.5)
+    asyncio.sleep(0.5)
     await ctx.send(".")
-    time.sleep(0.5)
+    asyncio.sleep(0.5)
     await ctx.send("..")
-    time.sleep(0.5)
+    asyncio.sleep(0.5)
     await ctx.send("...")
-    time.sleep(0.5)
+    asyncio.sleep(0.5)
     await(f"{random.choice(coin)}!!!")
 
 @bot.command()
 async def roll(ctx):
     await ctx.send(f"🎲 {ctx.author} rolled a dice!")
-    time.sleep(0.5)
+    asyncio.sleep(0.5)
     await ctx.send("*dice rolls down dramatically*")
-    time.sleep(0.5)
+    asyncio.sleep(0.5)
     await ctx.send(".")
-    time.sleep(0.5)
+    asyncio.sleep(0.5)
     await ctx.send("..")
-    time.sleep(0.5)
+    asyncio.sleep(0.5)
     await ctx.send("...")
-    time.sleep(0.5)
+    asyncio.sleep(0.5)
     await(f"{random.randint(1,6)}!!!")
 
 @bot.command()
@@ -704,7 +714,12 @@ async def on_message(message):
         await message.reply("thats what she said")
 
     if "gato" in message.content.lower():
-        for i in range(random.randint(1,30)):
+        user_id = message.author.id
+        if user_id in cooldowns and time.time() < cooldowns[user_id]:
+            await message.channel.send("Dont try to spam bozo")
+            return
+        cooldowns[user_id] = time.time() + cooldown_time
+        for i in range(random.randint(1,5)):
             await message.channel.send("GATO IS BACK")
             time.sleep(0.5)
         await message.channel.send("<:tr:1248294470588563497>")
