@@ -494,7 +494,7 @@ async def softban(ctx, member: discord.Member = None, *, reason: str = None):
                         value="`.softban <member> [reason]`\n*<member>* - The member you want to softban\n*[reason]* - The reason for the softban (optional)",
                         inline=False)
         embed.add_field(name="Example",
-                        value="`.softbam noobcoderyt Loser`\n\n*Noobcoder* will be softban with the reason *Loser*",
+                        value="`.softban noobcoderyt Loser`\n\n*Noobcoder* will be softbanned with the reason *Loser*",
                         inline=False)
 
         await ctx.send(embed=embed)
