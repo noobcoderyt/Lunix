@@ -63,6 +63,7 @@ def parse_duration(duration_str):
     amount, unit = match.groups()
     return int(amount) * unit_multipliers[unit]
 
+# Starting the bot
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
