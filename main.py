@@ -115,7 +115,8 @@ async def flip(ctx):
         dot += "."
         await msg.edit(content=dot)
         await asyncio.sleep(0.5)
-    await ctx.send(f"{random.choice(["Heads", "Tails"])}!!!")
+    _8ball_ = ["HEADS", "TAILS"]
+    await ctx.send(f"{random.choice(_8ball_)}!!!")
 
 @bot.command()
 async def roll(ctx):
@@ -218,6 +219,20 @@ async def help(ctx, arg: str = None):
                              `.warnadd <user> <reason>` - Adds a warning to a user.
                              `.warnview <caseID>` - Views a warning's case.
                              `.warnremove <user> <caseID> - Removes a user's warning
+
+                            """, inline=False)
+        await ctx.send(embed=embed)
+        return
+    
+    if arg == "economy":
+        embed = discord.Embed(title="Economy commands", color=discord.Color.blue(), description="""
+        Run individual commands to find out more about them!
+        """)
+
+        embed.add_field(name="Commands", value="""
+                             `.open_account` - Open your account
+                             `.balance <userID (optional)>` - Check account balance of yourself or any other user
+                             `.beg` - Get random amount of Lunuks
 
                             """, inline=False)
         await ctx.send(embed=embed)
@@ -690,6 +705,83 @@ async def unmute(ctx, member: discord.Member = None, *, reason: str = None):
                         inline=False)
 
         await ctx.send(embed=embed)
+
+#Moderation commands end here
+
+
+
+#Economy system
+
+async def get_bank_data():
+    with open("bank.json", "r") as f:
+        users = json.load(f)
+    return users
+
+@bot.command()
+async def open_account(ctx):
+    user_id = str(ctx.author.id)
+    users = await get_bank_data()
+    if user_id in users:
+        await ctx.reply("You already have an account bro")
+    else:
+        with open("bank.json", "w") as f:
+            users[user_id] = {}
+            users[user_id]["wallet"] = 0
+            json.dump(users, f)
+            await ctx.reply("Your account has been opened! You currently have 0 Lunuks")
+
+@bot.command()
+async def balance(ctx, arg:str = None):
+    user_id = str(ctx.author.id)
+    users = await get_bank_data()
+    if arg==None:
+        if user_id in users:
+            wallet = users[user_id]["wallet"]
+            await ctx.reply(f"You currently have {wallet} Lunuks!")
+        else:
+            await ctx.reply("You dont have an account bruh. Type `.help economy` to get started")
+    else:
+        wallet = users[arg]["wallet"]
+        await ctx.reply(f"He currently has {wallet} Lunuks!")
+
+@bot.command()
+async def beg(ctx):
+    cooldown_time = 60
+    user_id = ctx.author.id
+    if user_id in cooldowns and time.time() < cooldowns[user_id]:
+            await ctx.reply("Dont try to spam bozo")
+            return
+    cooldowns[user_id] = time.time() + cooldown_time
+    user_id = str(ctx.author.id)
+    earning = random.randint(1, 100)
+    users = await get_bank_data()
+    if user_id in users:
+        with open("bank.json", "w") as f:
+            users[user_id]["wallet"] += earning
+            json.dump(users, f)
+            await ctx.reply(f"Someone gave you {earning} Lunuks!")
+    else:
+        await ctx.reply("You dont have an account bruh. Type `.help economy` to get started")
+
+@bot.command()
+async def give(ctx, member:discord.Member, amount:int):
+    user_id = str(ctx.author.id)
+    member_id = str(member.id)
+    users = await get_bank_data()
+    wallet = users[user_id]["wallet"]
+    if amount>wallet:
+        await ctx.reply("You cant send more money than you have bozo")
+    else:
+        try:         
+            users[user_id]["wallet"] -= amount
+            users[member_id]["wallet"] += amount
+            with open("bank.json", "w") as f:
+                json.dump(users, f)
+            await ctx.reply(f"Successfully sent {amount} to the {member.mention}")
+        except Exception as e:
+            await ctx.reply(f"An error occured: {e}")
+
+
 
 
 # Message Events
