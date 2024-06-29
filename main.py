@@ -723,13 +723,22 @@ async def open_account(ctx):
     user_id = str(ctx.author.id)
     users = await get_bank_data()
     if user_id in users:
-        await ctx.reply("You already have an account bro")
+        embed = discord.Embed(title="Error",color=0x00b0f4,description=f"""
+            <@{user_id}>
+            You already have an account!
+""")
+        await ctx.reply(embed=embed)
     else:
         with open("bank.json", "w") as f:
             users[user_id] = {}
             users[user_id]["wallet"] = 0
             json.dump(users, f)
-            await ctx.reply("Your account has been opened! You currently have 0 Lunuks")
+            embed = discord.Embed(title="Congratulations!",color=0x00b0f4, description=f"""
+            <@{user_id}>
+            You have successfully created an account!
+            Your current balance is 0 Lunuks
+""")
+            await ctx.reply(embed=embed)
 
 @bot.command()
 async def balance(ctx, arg:str = None):
@@ -738,12 +747,26 @@ async def balance(ctx, arg:str = None):
     if arg==None:
         if user_id in users:
             wallet = users[user_id]["wallet"]
-            await ctx.reply(f"You currently have {wallet} Lunuks!")
+            embed = discord.Embed(title="Balance",color=0x00b0f4, description=f"""
+            <@{user_id}>
+            Wallet: {wallet} Lunuks
+""")
+            await ctx.reply(embed=embed)
         else:
-            await ctx.reply("You dont have an account bruh. Type `.help economy` to get started")
+            embed = discord.Embed(title="Error",color=0x00b0f4,description=f"""
+            <@{user_id}>
+            You don't have an account!
+            Type `.open_account` to create one
+            Type `.help economy` for more information
+""")
+            await ctx.reply(embed=embed)
     else:
         wallet = users[arg]["wallet"]
-        await ctx.reply(f"He currently has {wallet} Lunuks!")
+        embed = discord.Embed(title="Balance",color=0x00b0f4, description=f"""
+            <@{arg}>
+            Wallet: {wallet} Lunuks
+""")
+        await ctx.reply(embed=embed)
 
 @bot.command()
 async def beg(ctx):
@@ -760,9 +783,19 @@ async def beg(ctx):
         with open("bank.json", "w") as f:
             users[user_id]["wallet"] += earning
             json.dump(users, f)
-            await ctx.reply(f"Someone gave you {earning} Lunuks!")
+            embed = discord.Embed(title="Earnings!",color=0x00b0f4,description=f"""
+            <@{user_id}>
+            Someone gave you {earning} Lunuks!
+""")
+            await ctx.reply(embed=embed)
     else:
-        await ctx.reply("You dont have an account bruh. Type `.help economy` to get started")
+        embed = discord.Embed(title="Error",color=0x00b0f4,description=f"""
+            <@{user_id}>
+            You don't have an account!
+            Type `.open_account` to create one
+            Type `.help economy` for more information
+""")
+        await ctx.reply(embed=embed)
 
 @bot.command()
 async def give(ctx, member:discord.Member, amount:int):
@@ -771,16 +804,28 @@ async def give(ctx, member:discord.Member, amount:int):
     users = await get_bank_data()
     wallet = users[user_id]["wallet"]
     if amount>wallet:
-        await ctx.reply("You cant send more money than you have bozo")
+        embed = discord.Embed(title="Error",color=0x00b0f4, description=f"""
+            <@{user_id}>
+            You cannot send more money than you have!
+""")
+        await ctx.reply(embed=embed)
     else:
         try:         
             users[user_id]["wallet"] -= amount
             users[member_id]["wallet"] += amount
             with open("bank.json", "w") as f:
                 json.dump(users, f)
-            await ctx.reply(f"Successfully sent {amount} to the {member.mention}")
+            embed = discord.Embed(title="Transaction Successful!",color=0x00b0f4,description=f"""
+            <@{user_id}>
+            You have successfully transferred {amount} Lunuks to <@{member_id}>
+""")
+            await ctx.reply(embed=embed)
         except Exception as e:
-            await ctx.reply(f"An error occured: {e}")
+            embed = discord.Embed(title="Error",color=0x00b0f4,description=f"""
+            <@{user_id}>
+            An error occurred while performing the transaction!
+            Error: {e}
+""")
 
 
 
@@ -794,7 +839,7 @@ async def on_message(message):
     if message.channel.id == 1253742174584180849:
         chat = model.start_chat(history=[])
         response = chat.send_message(message.content)
-        if re.search("@|?ban|?mute|?obliterate|?eliminate", response.text):
+        if "@" in response.text or "?ban" in response.text or "?kick" in response.text or "?mute" in response.text:
             duration = timedelta(minutes=60)
             await message.author.timeout(duration, reason="trying to be too smart")
             await message.channel.send(f'{message.author.mention} has been timed out for trying to be too smart')
