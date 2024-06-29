@@ -725,7 +725,7 @@ async def on_message(message):
     if "hard" in message.content.lower():
         await message.reply("thats what she said")
 
-     user_id = message.author.id
+    user_id = message.author.id
     if "gato" in message.content.lower():
         user_id = message.author.id
         if user_id in cooldowns and time.time() < cooldowns[user_id]:
