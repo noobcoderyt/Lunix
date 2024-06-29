@@ -233,6 +233,7 @@ async def help(ctx, arg: str = None):
                              `.open_account` - Open your account
                              `.balance <userID (optional)>` - Check account balance of yourself or any other user
                              `.beg` - Get random amount of Lunuks
+                             `.send <user>` - Send money to a user
 
                             """, inline=False)
         await ctx.send(embed=embed)
