@@ -9,7 +9,7 @@ Join [here](https://discord.com/invite/xHVECSnRZ4)
 - `.fetchrepos [github username]` - Sends the public repositories of a user.
 - `.fetchcommits [github username] [repository name]` - Sends the latest commits of a repository.
 
-# Fun Commands
+### Fun Commands
 - `.roll` - Rolls a dice.
 - `.roles` - Displays the roles a member can get.
 - `.wish [user]` - Sends a Happy Birthday wish to a user of your choice.
@@ -22,7 +22,7 @@ Join [here](https://discord.com/invite/xHVECSnRZ4)
 - `.joke` - Sends a joke
 - `.fact` - Sends a fact.
 
-# Moderation Commands
+### Moderation Commands
 - `.mute <member> <duration> [reason]` - The mute command can be used to mute a user
 - `.unmute <member> [reason]` - The unmute command can be used to unmute a user
 - `.ban <member> <duration> [reason]` - The ban command can be used to ban a user
@@ -33,7 +33,7 @@ Join [here](https://discord.com/invite/xHVECSnRZ4)
 - `.warnview <caseID>` - Views a warning's case.
 - `.warnremove <user> <caseID>` - Removes a user's warning.
 
-# Economy Commands
+### Economy Commands
 - `.open_account` - Open an account.
 - `.balance <userID (optional)>` - Check current balance of yourself or another user
 - `.beg` - Get random amount of Lunuks
