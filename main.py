@@ -215,6 +215,9 @@ async def help(ctx, arg: str = None):
                              `.softban <member> [reason]` - The softban command can be used to ban and quickly unban a user
                              `.unban <userID> [reason]` - The unban command can be used to unban a banned user
                              `.kick <member> [reason]` - The kick command can be used to kick a user
+                             `.warnadd <user> <reason>` - Adds a warning to a user.
+                             `.warnview <caseID>` - Views a warning's case.
+                             `.warnremove <user> <caseID> - Removes a user's warning
 
                             """, inline=False)
         await ctx.send(embed=embed)
@@ -232,9 +235,6 @@ async def help(ctx, arg: str = None):
                      `.roles` - Displays the roles a member can get.
                      `.fetchrepos <github username>`- Displays the public repositories of a user.
                      `.fetchcommits <github username> <repository name>`- Displays the recent commits of a repository.
-                    `.warnadd <user> <reason>` - Adds a warning to a user.
-                     `.warnview <caseID>` - Views a warning's case.
-                    `.warnremove <user> <caseID> - Removes a user's warning
 
                     """, inline=False)
 
