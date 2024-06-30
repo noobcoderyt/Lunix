@@ -16,6 +16,7 @@ import aiosqlite
 import asyncio
 import string
 import re
+from discord.ext import tasks
 
 # APIs
 load_dotenv()
@@ -64,11 +65,21 @@ def parse_duration(duration_str):
     return int(amount) * unit_multipliers[unit]
 
 # Starting the bot
+@tasks.loop(minutes=1)
+async def update_activity():
+    activities = [
+        discord.Activity(type=discord.ActivityType.watching, name="TheLinuxHideout"),
+        discord.Activity(type=discord.ActivityType.watching, name="Youtube"),
+        discord.Activity(type=discord.ActivityType.playing, name="Bedwars")
+    ]
+    for activity in activities:
+        await bot.change_presence(status=discord.Status.online, activity=activity)
+        await asyncio.sleep(60)
+
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
-    await bot.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name="TheLinuxHideout"))
-
+    await update_activity()
 
 ### Prefix Commands
 @bot.command()
@@ -751,7 +762,7 @@ async def balance(ctx, arg:str = None):
             wallet = users[user_id]["wallet"]
             embed = discord.Embed(title="Balance",color=0x00b0f4, description=f"""
             <@{user_id}>
-            Wallet: {wallet} Lunuks
+            💸 Wallet: {wallet} Lunuks
 """)
             await ctx.reply(embed=embed)
         else:
@@ -766,7 +777,7 @@ async def balance(ctx, arg:str = None):
         wallet = users[arg]["wallet"]
         embed = discord.Embed(title="Balance",color=0x00b0f4, description=f"""
             <@{arg}>
-            Wallet: {wallet} Lunuks
+            💸 Wallet: {wallet} Lunuks
 """)
         await ctx.reply(embed=embed)
 
@@ -787,7 +798,7 @@ async def beg(ctx):
             json.dump(users, f)
             embed = discord.Embed(title="Earnings!",color=0x00b0f4,description=f"""
             <@{user_id}>
-            Someone gave you {earning} Lunuks!
+            💸 Someone gave you {earning} Lunuks!
 """)
             await ctx.reply(embed=embed)
     else:
@@ -801,6 +812,13 @@ async def beg(ctx):
 
 @bot.command()
 async def give(ctx, member:discord.Member, amount:int):
+    cooldown_time = 60
+    user_id = ctx.author.id
+    if user_id in cooldowns and time.time() < cooldowns[user_id]:
+            await ctx.reply("Dont try to spam bozo")
+            return
+    cooldowns[user_id] = time.time() + cooldown_time
+
     user_id = str(ctx.author.id)
     member_id = str(member.id)
     users = await get_bank_data()
@@ -819,7 +837,7 @@ async def give(ctx, member:discord.Member, amount:int):
                 json.dump(users, f)
             embed = discord.Embed(title="Transaction Successful!",color=0x00b0f4,description=f"""
             <@{user_id}>
-            You have successfully transferred {amount} Lunuks to <@{member_id}>
+            🤑 You have successfully transferred {amount} Lunuks to <@{member_id}>
 """)
             await ctx.reply(embed=embed)
         except Exception as e:
@@ -854,7 +872,7 @@ async def bet(ctx, amount:int=None):
                 probability = random.randint(0,1)
                 embed = discord.Embed(title="Bet", color=0x00b0f4, description=f"""
             <@{ctx.author.id}>
-            You betted {amount} Lunuks!
+            💵 You betted {amount} Lunuks!
 
 """)
                 await ctx.reply(embed=embed)
@@ -872,7 +890,7 @@ async def bet(ctx, amount:int=None):
                         json.dump(users, f)
                     embed = discord.Embed(title="You Won!",color=0x00b0f4, description=f"""
             <@{ctx.author.id}>
-            You won the bet! Your amount has been doubled!
+            💰 You won the bet! Your amount has been doubled!
 """)
                     await ctx.reply(embed=embed)
 
@@ -882,7 +900,7 @@ async def bet(ctx, amount:int=None):
                         json.dump(users, f)
                     embed = discord.Embed(title="You Lost!",color=0x00b0f4, description=f"""
             <@{ctx.author.id}>
-            You lost the bet! Your balance has been decreased by {amount} Lunuks!
+            💰 You lost the bet! Your balance has been decreased by {amount} Lunuks!
 """)
                     await ctx.reply(embed=embed)
 
@@ -974,7 +992,7 @@ async def on_message(message):
         else:
             await message.reply("<:Nerd:1156881557680820284>")
     
-    if re.search("LLL|LL|L", message.content):
+    if message.content == "L" or message.content == "LL" or message.content == "LLL":
         await message.reply("🫵")
 
     await bot.process_commands(message)
