@@ -38,3 +38,4 @@ Join [here](https://discord.com/invite/xHVECSnRZ4)
 - `.balance <userID (optional)>` - Check current balance of yourself or another user
 - `.beg` - Get random amount of Lunuks
 - `.give <user>` - Give Lunuks to a user
+- `.bet <amount>` - Bet an amount. If you win then your amount is doubled

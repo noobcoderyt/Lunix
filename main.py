@@ -89,15 +89,16 @@ async def info(ctx):
 
 @bot.command()
 async def roles(ctx):
-    await ctx.send("""
-        > Beginner -> Level 1
-        > Intermediate -> Level 5
-        > Pro -> Level 10, `Unlocks Embed and Attachments`
-        > Advance -> Level 20
-        > Legend -> Level 30
-        > Amazing Member -> Level 50, `You get a custom role of your choice`
-        > VIP -> NoobCoder's friends
+    embed = discord.Embed(title="Roles", color=0x00b0f4, description="""
+        • Beginner -> Level 1
+        • Intermediate -> Level 5
+        • Pro -> Level 10, `Unlocks Embed and Attachments`
+        • Advance -> Level 20
+        • Legend -> Level 30
+        • Amazing Member -> Level 50, `You get a custom role of your choice`
+        • VIP -> NoobCoder's friends
 """)
+    await ctx.send(embed=embed)
     
 @bot.command()
 async def rules(ctx):
@@ -234,6 +235,7 @@ async def help(ctx, arg: str = None):
                              `.balance <userID (optional)>` - Check account balance of yourself or any other user
                              `.beg` - Get random amount of Lunuks
                              `.send <user>` - Send money to a user
+                             `.bet <amount>` - Bet an amount. If you win then your amount is doubled
 
                             """, inline=False)
         await ctx.send(embed=embed)
@@ -300,7 +302,7 @@ async def fetchcommits(ctx,username="noobcoderyt",repo_name="Lunix"):
     
     if response.status_code == 200:
         commits = response.json()
-        commit_messages = [commit['commit']['message'] for commit in commits[:5]]
+        commit_messages = [commit['commit']['message'] for commit in commits[:10]]
         message = '```\n' + '\n'.join(commit_messages) + '\n```'
         await ctx.send(message)
     else:
@@ -826,6 +828,79 @@ async def give(ctx, member:discord.Member, amount:int):
             An error occurred while performing the transaction!
             Error: {e}
 """)
+            await ctx.reply(embed=embed)
+
+
+@bot.command()
+async def bet(ctx, amount:int=None):
+    user_id = str(ctx.author.id)
+    users = await get_bank_data()
+    if user_id in users:
+        if amount == None:
+            embed = discord.Embed(title="Error",color=0x00b0f4, description=f"""
+                <@{user_id}>
+                Please enter an amount to bet!
+    """)
+            await ctx.reply(embed=embed)
+        else:
+            wallet = users[user_id]["wallet"]
+            if amount > wallet:
+                embed = discord.Embed(title="Error",color=0x00b0f4, description=f"""
+            <@{user_id}>
+            You cannot bet money than you have!
+""")
+                await ctx.reply(embed=embed)
+            else:
+                probability = random.randint(0,1)
+                embed = discord.Embed(title="Bet", color=0x00b0f4, description=f"""
+            <@{ctx.author.id}>
+            You betted {amount} Lunuks!
+
+""")
+                await ctx.reply(embed=embed)
+                await asyncio.sleep(0.5)
+                await ctx.send(".")
+                await asyncio.sleep(0.5)
+                await ctx.send("..")
+                await asyncio.sleep(0.5)
+                await ctx.send("...")
+                await asyncio.sleep(0.5)
+
+                if probability == 0:
+                    users[user_id]["wallet"] += amount*2
+                    with open("bank.json", "w") as f:
+                        json.dump(users, f)
+                    embed = discord.Embed(title="You Won!",color=0x00b0f4, description=f"""
+            <@{ctx.author.id}>
+            You won the bet! Your amount has been doubled!
+""")
+                    await ctx.reply(embed=embed)
+
+                elif probability == 1:
+                    users[user_id]["wallet"] -= amount
+                    with open("bank.json", "w") as f:
+                        json.dump(users, f)
+                    embed = discord.Embed(title="You Lost!",color=0x00b0f4, description=f"""
+            <@{ctx.author.id}>
+            You lost the bet! Your balance has been decreased by {amount} Lunuks!
+""")
+                    await ctx.reply(embed=embed)
+
+                else:
+                    embed = discord.Embed(title="Error",color=0x00b0f4,description=f"""
+            <@{user_id}>
+            An error occurred while betting!
+""")
+                    await ctx.reply(embed=embed)
+    
+    else:
+        embed = discord.Embed(title="Error",color=0x00b0f4,description=f"""
+            <@{user_id}>
+            You don't have an account!
+            Type `.open_account` to create one
+            Type `.help economy` for more information
+""")
+        
 
 
 
