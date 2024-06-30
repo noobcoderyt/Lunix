@@ -753,7 +753,7 @@ async def open_account(ctx):
 """)
             await ctx.reply(embed=embed)
 
-@bot.command()
+@bot.command(aliases = ["bal"])
 async def balance(ctx, arg:str = None):
     user_id = str(ctx.author.id)
     users = await get_bank_data()
@@ -918,6 +918,7 @@ async def bet(ctx, amount:int=None):
             Type `.open_account` to create one
             Type `.help economy` for more information
 """)
+        await ctx.reply(embed=embed)
         
 
 
