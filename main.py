@@ -27,13 +27,26 @@ github_api = os.getenv("github_api")
 
 # Initializing AI
 genai.configure(api_key=ai_api)
-model = genai.GenerativeModel("gemini-1.5-flash", system_instruction="You are a discord bot called Lunix from a discord server named TheLinuxHideout. You talk like people do on whatsapp or discord. You use abbrevations for words like idk, lol, lmao. You also like to roast people. Your answers should be under 200 characters until asked to extend")
+model = genai.GenerativeModel("gemini-1.5-flash",safety_settings=None, system_instruction="You are a discord bot called Lunix from a discord server named TheLinuxHideout. You talk like people do on whatsapp or discord. You use abbrevations for words like idk, lol, lmao. You also like to roast people. Your answers should be under 200 characters until asked to extend")
 
 # Discord API Initialization
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 bot = commands.Bot(command_prefix=".", intents=intents, help_command=None)
+
+@tasks.loop(minutes=1)
+async def update_activity():
+    activities = [
+        discord.Activity(type=discord.ActivityType.watching, name="TheLinuxHideout"),
+        discord.Activity(type=discord.ActivityType.watching, name="Youtube"),
+        discord.Activity(type=discord.ActivityType.playing, name="Bedwars")
+    ]
+    while True:
+        for activity in activities:
+            await bot.change_presence(status=discord.Status.online, activity=activity)
+            await asyncio.sleep(60)
+
 
 
 kamehamehagifs = ["https://c.tenor.com/yOej10JYX4sAAAAM/kamehameha-ui-goku.gif","https://66.media.tumblr.com/40e19795a78fbb4dc5212b0416870bad/tumblr_p262c08aKm1wyh2j4o1_500.gif","https://media1.tenor.com/images/8f7b25ee13cfd669418c78cd50431de3/tenor.gif?itemid=11539971","https://4.bp.blogspot.com/-E_BQvOD2TsM/WNKLRZPg3MI/AAAAAAAAZZ8/hdfcuVeBjp88nJQmON6tJyTDvXZhuQtBwCLcB/s1600/Gifs+animados+Kamehameha+11.gif", "https://media.tenor.com/images/be06b296f1144d9d37dadbd22f46cf54/tenor.gif"]
@@ -63,18 +76,6 @@ def parse_duration(duration_str):
 
     amount, unit = match.groups()
     return int(amount) * unit_multipliers[unit]
-
-# Starting the bot
-@tasks.loop(minutes=1)
-async def update_activity():
-    activities = [
-        discord.Activity(type=discord.ActivityType.watching, name="TheLinuxHideout"),
-        discord.Activity(type=discord.ActivityType.watching, name="Youtube"),
-        discord.Activity(type=discord.ActivityType.playing, name="Bedwars")
-    ]
-    for activity in activities:
-        await bot.change_presence(status=discord.Status.online, activity=activity)
-        await asyncio.sleep(60)
 
 @bot.event
 async def on_ready():
@@ -247,6 +248,7 @@ async def help(ctx, arg: str = None):
                              `.beg` - Get random amount of Lunuks
                              `.send <user>` - Send money to a user
                              `.bet <amount>` - Bet an amount. If you win then your amount is doubled
+                             `.lb` or `.leaderboard` - See the leaderboard
 
                             """, inline=False)
         await ctx.send(embed=embed)
@@ -919,6 +921,18 @@ async def bet(ctx, amount:int=None):
             Type `.help economy` for more information
 """)
         await ctx.reply(embed=embed)
+
+@bot.command(aliases=["lb"])
+async def leaderboard(ctx):
+    users = await get_bank_data()
+    sorted_users = sorted(users.items(), key=lambda x: x[1]["wallet"], reverse=True)
+    
+    embed = discord.Embed(title="Leaderboard", color=0x00b0f4)
+    for i, (user_id, data) in enumerate(sorted_users[:10], 1):
+        user = await bot.fetch_user(int(user_id))
+        embed.add_field(name=f"{i}. {user.name}", value=f"{data['wallet']} Lunuks", inline=False)
+    
+    await ctx.reply(embed=embed)
         
 
 
