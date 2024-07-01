@@ -733,6 +733,16 @@ async def get_bank_data():
         users = json.load(f)
     return users
 
+async def get_stocks_data():
+    with open("stocks.json", "r") as f:
+        stock_prices = json.load(f)
+    return stock_prices
+
+async def get_portfolio_data():
+    with open("portfolios.json", "r") as f:
+        portfolio = json.load(f)
+    return portfolio
+
 @bot.command()
 async def open_account(ctx):
     user_id = str(ctx.author.id)
@@ -933,7 +943,72 @@ async def leaderboard(ctx):
         embed.add_field(name=f"{i}. {user.name}", value=f"{data['wallet']} Lunuks", inline=False)
     
     await ctx.reply(embed=embed)
-        
+
+@bot.command()
+async def stocks(ctx):
+    user_id = ctx.author.id
+    stock_prices = await get_stocks_data()
+    stock_list = '\n'.join([f'**{stock}: {price}**' for stock, price in stock_prices.items()])
+    embed = discord.Embed(title="📈 Stocks", color=0x00b0f4, description=f"""
+    <@{user_id}>
+    The current stock prices are:\n
+    {stock_list}
+""")
+    await ctx.reply(embed=embed)
+
+@bot.command()
+async def buy(ctx, stock:str, amount: int):
+    stock_prices = await get_stocks_data()
+    user_portfolios = await get_portfolio_data()
+    user_id = str(ctx.author.id)
+    stock = stock.upper()
+    if stock not in stock_prices:
+        embed = discord.Embed(title="Error", color=0x00b0f4, description=f"""
+    <@{user_id}>
+    Stock not found!
+""")
+        await ctx.reply(embed=embed)
+
+    else:
+        cost = stock_prices[stock] * amount
+        users = await get_bank_data()
+        wallet = users[user_id]["wallet"]
+        if cost > wallet:
+            embed = discord.Embed(title="Error", color=0x00b0f4, description=f"""
+        <@{ctx.author.id}>
+        You don't have enough Lunuks!
+""")
+            await ctx.reply(embed=embed)
+        else:
+            if user_id not in user_portfolios:
+                user_portfolios[user_id] = {}
+            if stock in user_portfolios[user_id]:
+                user_portfolios[user_id][stock] += amount
+            else:
+                user_portfolios[user_id][stock] = amount
+            with open("portfolios.json", "w") as f:
+                json.dump(user_portfolios, f)
+                embed = discord.Embed(title="Transaction Successfull!", color=0x00b0f4, description=f"""
+        <@{ctx.author.id}>
+        You have successfully bought {amount} {stock} for {cost}!
+    """)
+                await ctx.reply(embed=embed)
+
+@bot.command()
+async def my_stocks(ctx):
+    user_portfolios = await get_portfolio_data()
+    user_id = str(ctx.author.id)
+    user_stocks = user_portfolios[user_id]
+    stock_list = '\n'.join([f'**{stock}: {amount}**' for stock, amount in user_stocks.items()])
+    
+    embed = discord.Embed(
+        title="📈 Your Stocks",
+        color=0x00b0f4,
+        description=f"<@{user_id}> You own the following stocks:\n\n{stock_list}"
+    )
+    await ctx.reply(embed=embed)
+
+
 
 
 
