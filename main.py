@@ -902,6 +902,7 @@ async def bet(ctx, amount:int=None):
 
                 if probability == 0:
                     users[user_id]["wallet"] += amount*2
+                    users[user_id]["wallet"] -= amount
                     with open("bank.json", "w") as f:
                         json.dump(users, f)
                     embed = discord.Embed(title="You Won!",color=0x00b0f4, description=f"""
@@ -1075,6 +1076,19 @@ async def sell(ctx, stock: str, amount: int):
 async def on_message(message):
     if message.author == bot.user:
         return
+    
+    user_id = str(message.author.id)
+    random_lunuks = random.randint(3, 8)
+    users = await get_bank_data()
+    
+    if user_id in users:
+        users[user_id]["wallet"] += random_lunuks
+    else:
+        users[user_id] = {"wallet": random_lunuks}
+    
+    with open("bank.json", "w") as f:
+        json.dump(users, f)
+    
 
     if message.channel.id == 1253742174584180849:
         chat = model.start_chat(history=[])
