@@ -40,5 +40,7 @@ Join [here](https://discord.com/invite/xHVECSnRZ4)
 - `.give <user>` - Give Lunuks to a user
 - `.bet <amount>` - Bet an amount. If you win then your amount is doubled
 - `.lb` or `.leaderboard` - See the leaderboard
+- `.stocks` Check the current price of stocks
+- `.my_stocks` Check the stocks that you own
 - `.buy <stock> <amount>` Buy a stock
 - `.sell <stock> <amount>` Sell a stock
