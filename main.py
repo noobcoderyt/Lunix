@@ -249,6 +249,8 @@ async def help(ctx, arg: str = None):
                              `.send <user>` - Send money to a user
                              `.bet <amount>` - Bet an amount. If you win then your amount is doubled
                              `.lb` or `.leaderboard` - See the leaderboard
+                             `.buy <stock> <amount>` Buy a stock
+                             `.sell <stock> <amount>` Sell a stock
 
                             """, inline=False)
         await ctx.send(embed=embed)
