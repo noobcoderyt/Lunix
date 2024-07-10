@@ -51,8 +51,11 @@ class Bet(commands.Cog):
 
                     if probability == 0:
                         users[user_id]["wallet"] += amount*2
+                        users[user_id]["wallet"] -= amount
+
                         with open("./cogs/bank.json", "w") as f:
                             json.dump(users, f)
+
                         embed = discord.Embed(title="You Won!",color=0x00b0f4, description=f"""
                                 <@{ctx.author.id}>
                                 💰 You won the bet! Your amount has been doubled!
@@ -61,8 +64,10 @@ class Bet(commands.Cog):
 
                     elif probability == 1:
                         users[user_id]["wallet"] -= amount
+
                         with open("./cogs/bank.json", "w") as f:
                             json.dump(users, f)
+                            
                         embed = discord.Embed(title="You Lost!",color=0x00b0f4, description=f"""
                         <@{ctx.author.id}>
                         💰 You lost the bet! Your balance has been decreased by {amount} Lunuks!
@@ -84,5 +89,6 @@ class Bet(commands.Cog):
                 Type `.help economy` for more information
             """)
             await ctx.reply(embed=embed)
+            
 async def setup(bot: commands.Bot):
     await bot.add_cog(Bet(bot))
