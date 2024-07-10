@@ -6,6 +6,7 @@ from datetime import timedelta
 import google.generativeai as genai
 import time
 import random
+import json
 from dotenv import load_dotenv
 import os
 
@@ -15,6 +16,12 @@ ai_api = os.getenv("ai_api")
 genai.configure(api_key=ai_api)
 model = genai.GenerativeModel("gemini-1.5-flash", 
                               system_instruction="You are a discord bot called Lunix from a discord server named TheLinuxHideout. You talk like people do on whatsapp or discord. You use abbrevations for words like idk, lol, lmao. You also like to roast people. Your answers should be under 200 characters until asked to extend")
+
+
+async def get_bank_data():
+    with open("./cogs/bank.json", "r") as f:
+        users = json.load(f)
+    return users
 
 cooldowns = {}
 cooldown_time = 600
@@ -29,6 +36,18 @@ class Events(commands.Cog):
     async def on_message(self, message: discord.Message):
         if message.author == self.bot.user:
             return
+        
+        user_id = str(message.author.id)
+        random_lunuks = random.randint(3, 8)
+        users = await get_bank_data()
+
+        if user_id in users:
+            users[user_id]["wallet"] += random_lunuks
+        else:
+            users[user_id] = {"wallet": random_lunuks}
+
+        with open("./cogs/bank.json", "w") as f:
+            json.dump(users, f)
 
         if message.channel.id == 1253742174584180849:
             chat = model.start_chat(history=[])
