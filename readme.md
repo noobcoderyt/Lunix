@@ -30,7 +30,8 @@ Join [here](https://discord.com/invite/xHVECSnRZ4)
 - `.unban <userID> [reason]` - The unban command can be used to unban a banned user
 - `.kick <member> [reason]` - The kick command can be used to kick a user
 - `.warnadd <user> <reason>` - Adds a warning to a user.
-- `.warnview <caseID>` - Views a warning's case.
+- `.warnviewid <caseID>` - Views a warning's case.
+- `.warnviewuser <user>` - Views the warnings of a user.
 - `.warnremove <user> <caseID>` - Removes a user's warning.
 
 ### Economy Commands
